@@ -1,0 +1,25 @@
+{
+  "name": "dvelum/module-designer",
+  "version": "1.5.0-dev",
+  "type": "dvelum-module",
+  "description": "Designer module for DVelum",
+  "keywords": ["dvelum","designer"],
+  "homepage": "https://github.com/dvelum/module-designer",
+  "license": "GPL-3.0",
+  "authors": [
+    {
+      "name": "Kirill Yegorov",
+      "email": "kirill@dvelum.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/dvelum/module-designer/issues",
+    "source": "https://github.com/dvelum/module-designer"
+  },
+  "require": {
+    "php":">=7.1",
+    "oomphinc/composer-installers-extender": "^1.1",
+    "dvelum/dvelum": ">=3.0.0"
+  }
+}
