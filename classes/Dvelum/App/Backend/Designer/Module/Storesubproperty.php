@@ -23,7 +23,7 @@ use Dvelum\App\Backend\Designer\Module;
 
 class Storesubproperty extends Module\Store
 {
-    public function proplistAction()
+    public function propListAction()
     {
         if (!$this->checkObject()) {
             return;
@@ -59,7 +59,7 @@ class Storesubproperty extends Module\Store
             ['name' => 'writer', 'value' => strtolower($writerType)],
         ];
 
-        Response::jsonSuccess($results);
+        $this->response->success($results);
     }
 
     public function listAction()
@@ -71,7 +71,7 @@ class Storesubproperty extends Module\Store
         $sub = $this->request->post('sub', 'string', '');
         if (!in_array($sub, ['proxy', 'reader', 'writer'])) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return false;
+            return;
         }
 
         switch ($sub) {
@@ -111,7 +111,7 @@ class Storesubproperty extends Module\Store
     }
 
     /**
-     * Change  subproprty object type
+     * Change sub property object type
      */
     public function changeTypeAction()
     {
@@ -124,7 +124,7 @@ class Storesubproperty extends Module\Store
 
         if (!in_array($sub, ['proxy', 'reader', 'writer']) || !strlen($type)) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return false;
+            return;
         }
 
         $config = [];
@@ -167,7 +167,7 @@ class Storesubproperty extends Module\Store
     /**
      * Set sub object property
      */
-    public function setPropertyAction()
+    public function setPropertyAction() : void
     {
         if (!$this->checkObject()) {
             return;
@@ -177,9 +177,9 @@ class Storesubproperty extends Module\Store
         $sub = $this->request->post('sub', 'string', '');
 
 
-        if (!in_array($sub, array('proxy', 'reader', 'writer')) || !strlen($property)) {
+        if (!in_array($sub, ['proxy', 'reader', 'writer']) || !strlen($property)) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return false;
+            return;
         }
 
         if ($sub == 'proxy') {
@@ -189,7 +189,7 @@ class Storesubproperty extends Module\Store
         }
 
         if (!$obj->isValidProperty($property)) {
-            $this->response->error();
+            $this->response->error('');
             return;
         }
 
@@ -198,5 +198,4 @@ class Storesubproperty extends Module\Store
         $this->storeProject();
         $this->response->success();
     }
-
 }

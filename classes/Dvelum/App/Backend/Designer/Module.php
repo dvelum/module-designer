@@ -8,7 +8,7 @@ use Dvelum\Response;
 abstract class Module
 {
     /**
-     * @var Lang
+     * @var Lang\Dictionary
      */
     protected $lang;
     /**
@@ -21,7 +21,7 @@ abstract class Module
      */
     protected $designerConfig;
     /**
-     * @var Store_Session
+     * @var \Store_Session
      */
     protected $session;
     /**
@@ -118,7 +118,8 @@ abstract class Module
 
         if (!strlen($name) || !$project->objectExists($name)) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return;
+            $this->response->send();
+            exit();
         }
 
         return $project->getObject($name);
