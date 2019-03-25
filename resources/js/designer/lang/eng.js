@@ -64,6 +64,7 @@ var desLang = {
     dataIndex: 'Data Index',
     dictionary: 'Dictionary',
     description: 'Description',
+    designerVersion:'Designer Version',
 
     enterActionName: 'Please enter new Action name (aplhanum)',
     enterColumnId: 'Please enter new column ID',
@@ -240,16 +241,16 @@ var desLang = {
     window: 'Window',
     windowSizeChanged: 'Window size changed',
 
-    selectDataStore: 'Please select dataStore', // === new
-    searchField: 'Search field',// === new
-    dictionaryField: 'Dictionary field',// === new
-    mediaHtmlField: 'WYSIWYG media field',// === new
-    mediaItemField: 'Medialibrary item',	//=== new
-    relatedItemsGrid: 'Related Items grid',//=== new
-    includedFiles: 'Files to be included',//=== new
+    selectDataStore: 'Please select dataStore',
+    searchField: 'Search field',
+    dictionaryField: 'Dictionary field',
+    mediaHtmlField: 'WYSIWYG media field',
+    mediaItemField: 'Medialibrary item',
+    relatedItemsGrid: 'Related Items grid',
+    includedFiles: 'Files to be included',
     includedLangs: 'Langs to be included',
-    addFile: 'Add file', //=== new
-    addProjectFile: 'Add Project file', //===new
-    undo: 'Undo', //===new
-    redo: 'Redo' //===new
+    addFile: 'Add file',
+    addProjectFile: 'Add Project file',
+    undo: 'Undo',
+    redo: 'Redo'
 };

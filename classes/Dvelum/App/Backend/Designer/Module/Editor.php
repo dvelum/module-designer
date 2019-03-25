@@ -1,42 +1,65 @@
 <?php
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\Filter;
 
 /**
- * Operations with Colum editor
+ * Operations with Column editor
  */
-class Backend_Designer_Sub_Editor extends Backend_Designer_Sub_Properties
+class Editor extends Properties
 {
-
-    protected function _getColumn()
+    protected function getColumn()
     {
         /*
          * Grid
          */
-        $o = parent::_getObject();
-        $col = Request::post('column', 'string', false);
+        $o = parent::getObject();
+        $col = $this->request->post('column', 'string', false);
 
         if ($col === false || !$o->columnExists($col)) {
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return null;
         }
         return $o->getColumn($col);
     }
 
-    protected function _getObject()
+    protected function getObject()
     {
-        $column = $this->_getColumn();
+        $column = $this->getColumn();
+        if(is_null($column)){
+            return null;
+        }
         $object = $column->editor;
 
         if (empty($object)) {
-            $object = Ext_Factory::object('Form_Field_Text');
-            $object->setName(parent::_getObject()->getName() . '_' . $column->getName() . '_editor');
+            $object = \Ext_Factory::object('Form_Field_Text');
+            $object->setName(parent::getObject()->getName() . '_' . $column->getName() . '_editor');
             $column->editor = $object;
-            $this->_storeProject();
+            $this->storeProject();
         }
         return $object;
     }
 
-    protected function _setEditor(Ext_Object $editor)
+    protected function setEditor(\Ext_Object $editor)
     {
-        $this->_getColumn()->editor = $editor;
+        $this->getColumn()->editor = $editor;
     }
 
     /**
@@ -44,75 +67,83 @@ class Backend_Designer_Sub_Editor extends Backend_Designer_Sub_Properties
      */
     public function removeAction()
     {
-        $this->_getProject()->getEventManager()->removeObjectEvents($this->_getObject()->getName());
-        $this->_getColumn()->editor = '';
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->getProject()->getEventManager()->removeObjectEvents($this->getObject()->getName());
+        $this->getColumn()->editor = '';
+        $this->storeProject();
+        $this->response->success();
     }
 
     /**
      * Change field type
      */
-    public function changetypeAction()
+    public function changeTypeAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
-        $column = $this->_getColumn();
-        $type = Request::post('type', 'string', false);
-        $adapter = Request::post('adapter', 'string', false);
-        $dictionary = Request::post('dictionary', 'string', false);
+        if(!$this->checkLoaded()){
+            return;
+        }
+
+        $object = $this->getObject();
+
+        $type = $this->request->post('type', 'string', false);
+        $adapter = $this->request->post('adapter', 'string', false);
+        $dictionary = $this->request->post('dictionary', 'string', false);
 
         if ($type === 'Form_Field_Adapter') {
-            $newObject = Ext_Factory::object($adapter);
+            $newObject = \Ext_Factory::object($adapter);
             /*
              * Invalid adapter
              */
-            if (!$adapter || !strlen($adapter) || !class_exists($adapter))
-                Response::jsonError($this->_lang->INVALID_VALUE, array('adapter' => $this->_lang->INVALID_VALUE));
+            if (!$adapter || !strlen($adapter) || !class_exists($adapter)){
+                $this->response->error($this->lang->get('INVALID_VALUE'), array('adapter' => $this->lang->get('INVALID_VALUE')));
+                return;
+            }
 
             if ($adapter === 'Ext_Component_Field_System_Dictionary') {
                 /*
                  * Inavalid dictionary
                  */
-                if (!$dictionary || !strlen($dictionary))
-                    Response::jsonError($this->_lang->INVALID_VALUE, array('dictionary' => $this->_lang->INVALID_VALUE));
-
+                if (!$dictionary || !strlen($dictionary)){
+                    $this->response->error($this->lang->get('INVALID_VALUE'), array('dictionary' =>$this->lang->get('INVALID_VALUE')));
+                    return;
+                }
                 $newObject->dictionary = $dictionary;
 
             }
         } else {
-            $newObject = Ext_Factory::object($type);
+            $newObject = \Ext_Factory::object($type);
             /*
              * No changes
              */
-            if ($type === $object->getClass())
-                Response::jsonSuccess();
+            if ($type === $object->getClass()){
+                $this->response->success();
+                return;
+            }
         }
 
-        Ext_Factory::copyProperties($object, $newObject);
+        \Ext_Factory::copyProperties($object, $newObject);
         $newObject->setName($object->getName());
 
-        $this->_getProject()->getEventManager()->removeObjectEvents($newObject->getName());
+        $this->getProject()->getEventManager()->removeObjectEvents($newObject->getName());
 
-        $this->_setEditor($newObject);
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->setEditor($newObject);
+        $this->storeProject();
+        $this->response->success();
     }
 
 
     /**
      * Get events for object
      */
-    public function objecteventsAction()
+    public function objectEventsAction()
     {
-        $project = $this->_getProject();
-        $object = $this->_getObject();
+        $project = $this->getProject();
+        $object = $this->getObject();
         $objectName = $object->getName();
         $objectEvents = $project->getEventManager()->getObjectEvents($objectName);
 
         $events = $object->getConfig()->getEvents();
 
-        $result = array();
+        $result = [];
         $id = 1;
         foreach ($events as $name => $config) {
             if (isset($objectEvents[$name]) && !empty($objectEvents[$name]))
@@ -120,19 +151,19 @@ class Backend_Designer_Sub_Editor extends Backend_Designer_Sub_Properties
             else
                 $hasCode = false;
 
-            $result[] = array(
+            $result[] = [
                 'id' => $id,
                 'object' => $objectName,
                 'event' => $name,
-                'params' => $this->_convertParams($config),
+                'params' => $this->convertParams($config),
                 'has_code' => $hasCode
-            );
+            ];
             $id++;
         }
-        Response::jsonSuccess($result);
+        $this->response->success($result);
     }
 
-    protected function _convertParams($config)
+    protected function convertParams($config)
     {
         if (empty($config))
             return '';
@@ -145,22 +176,23 @@ class Backend_Designer_Sub_Editor extends Backend_Designer_Sub_Properties
         return implode(' , ', $paramsArray);
     }
 
-    protected function _getEvent()
+    protected function getEvent()
     {
-        $event = Request::post('event', 'string', false);
-
-        if (!strlen($event) || $event === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
-
+        $event = $this->request->post('event', 'string', false);
+        if (!strlen($event) || $event === false){
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            $this->response->send();
+            exit();
+        }
         return $event;
     }
 
-    public function eventcodeAction()
+    public function eventCodeAction()
     {
-        $objectName = $this->_getObject()->getName();
-        $project = $this->_getProject();
+        $objectName = $this->getObject()->getName();
+        $project = $this->getProject();
 
-        $event = $this->_getEvent();
+        $event = $this->getEvent();
 
         $eventManager = $project->getEventManager();
 
@@ -169,36 +201,39 @@ class Backend_Designer_Sub_Editor extends Backend_Designer_Sub_Properties
         else
             $code = '';
 
-        Response::jsonSuccess(array('code' => $code));
+        $this->response->success(['code' => $code]);
     }
 
 
-    public function saveeventAction()
+    public function saveEventAction()
     {
-        $objectName = $this->_getObject()->getName();
-        $project = $this->_getProject();
+        $objectName = $this->getObject()->getName();
+        $project = $this->getProject();
 
-        $buffer = Request::post('buffer', Filter::FILTER_INTEGER, false);
+        $buffer = $this->request->post('buffer', Filter::FILTER_INTEGER, false);
         if (empty($buffer)) {
             $buffer = false;
         }
 
-        $event = $this->_getEvent();
-        $code = Request::post('code', 'raw', '');
-        $events = $this->_getObject()->getConfig()->getEvents();
+        $event = $this->getEvent();
+        $code = $this->request->post('code', 'raw', '');
+
+        $events = $this->getObject()->getConfig()->getEvents();
+
         $project->getEventManager()->setEvent($objectName, $event, $code, $events->$event, false, $buffer);
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+
+        $this->response->success();
     }
 
-    public function removeeventAction()
+    public function removeEventAction()
     {
-        $event = $this->_getEvent();
-        $name = $this->_getObject()->getName();
-        $project = $this->_getProject();
+        $event = $this->getEvent();
+        $name = $this->getObject()->getName();
+        $project = $this->getProject();
 
         $project->getEventManager()->removeObjectEvent($name, $event);
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 }

@@ -875,7 +875,9 @@ Ext.define('designer.application', {
 
                 '->',
 
-                this.projectPathLabel
+                this.projectPathLabel,
+                '-',
+                '<span data-qtip="'+desLang.designerVersion+'" class="designer-version">'+designerVersion+'</span>'
 
             ]
         }];

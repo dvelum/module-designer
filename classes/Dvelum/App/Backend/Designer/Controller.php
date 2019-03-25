@@ -22,6 +22,7 @@ namespace Dvelum\App\Backend\Designer;
 
 use Dvelum\App\Backend;
 use Dvelum\Config;
+use Dvelum\Externals\Module\Manager;
 use Dvelum\Filter;
 use Dvelum\Request;
 use Dvelum\Response;
@@ -40,7 +41,7 @@ class Controller extends Backend\Controller
     /**
      * @var string $version
      */
-    protected $version;
+    protected $version = null;
 
     /**
      * @var string[] $externalScripts
@@ -141,7 +142,12 @@ class Controller extends Backend\Controller
     {
         parent::__construct($request, $response);
         $this->designerConfig = Config::storage()->get('designer.php');
-        $this->version = Config::storage()->get('versions.php')->get('designer');
+
+        $moduleManager = Manager::factory($this->appConfig);
+        $moduleInfo = $moduleManager->getModuleConfig('dvelum','module-designer');
+        if(!empty($moduleInfo)){
+            $this->version = $moduleInfo['version'];
+        }
     }
 
     /**
@@ -176,7 +182,7 @@ class Controller extends Backend\Controller
         Model::factory('Medialib')->includeScripts();
         $this->resource->addJs('/resources/dvelum-module-designer/js/designer/lang/' . $this->designerConfig->get('lang') . '.js',
             1);
-        $this->resource->addCss('/resources/dvelum-module-designer/js/designer/style.css');
+        $this->resource->addCss('/resources/dvelum-module-designer/css/style.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/lib/codemirror.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/dialog/dialog.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/hint/show-hint.css');
@@ -195,6 +201,7 @@ class Controller extends Backend\Controller
         $this->resource->addInlineJs('
 		      var dbConfigsList = ' . json_encode($dbConfigs) . ';    
 		      var componentTemplates = ' . json_encode(array_values($componentTemplates)) . ';  
+		      var designerVersion = "'.$this->version.'";
 		');
 
         $count = 4;

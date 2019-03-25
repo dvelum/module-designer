@@ -21,5 +21,4 @@ return [
 	'vcs_support' => false,
 	'theme'=>'gray',
 	'application_theme' => 'gray'
-
 ];

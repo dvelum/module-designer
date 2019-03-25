@@ -1,107 +1,137 @@
 <?php
 /**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+/**
  * Operations with forms
  */
 
+use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Config\ConfigInterface;
 use Dvelum\Orm;
 
-class Backend_Designer_Sub_Form extends Backend_Designer_Sub
+class Form extends Module
 {
     /**
-     * @var Designer_Project
+     * @var \Designer_Project
      */
-    protected $_project;
+    protected $project;
     /**
-     * @var Ext_Grid
+     * @var \Ext_Grid
      */
-    protected $_object;
+    protected $object;
 
-    public function __construct()
+    protected function checkObject()
     {
-        parent::__construct();
-        $this->_checkLoaded();
-        $this->_checkObject();
-    }
+        $name = $this->request->post('object', 'string', '');
+        $project = $this->getProject();
+        if (!strlen($name) || !$project->objectExists($name) || $project->getObject($name)->getClass() !== 'Form'){
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
-    protected function _checkObject()
-    {
-        $name = Request::post('object', 'string', '');
-        $project = $this->_getProject();
-        if (!strlen($name) || !$project->objectExists($name) || $project->getObject($name)->getClass() !== 'Form')
-            Response::jsonError($this->_lang->WRONG_REQUEST);
-
-        $this->_project = $project;
-        $this->_object = $project->getObject($name);
+        $this->project = $project;
+        $this->object = $project->getObject($name);
     }
 
     /**
      * Import fields into the form object
      */
-    public function importfieldsAction()
+    public function importFieldsAction()
     {
-        $importObject = Request::post('importobject', 'string', false);
-        $importFields = Request::post('importfields', 'array', array());
+        if(!$this->checkLoaded() || !$this->checkObject()){
+            return;
+        }
+        $importObject = $this->request->post('importobject', 'string', false);
+        $importFields = $this->request->post('importfields', 'array', array());
 
-        if (!$importObject || empty($importFields) || $this->_project->objectExists($importObject))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if (!$importObject || empty($importFields) || $this->_project->objectExists($importObject)){
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $importObjectConfig = Orm\Record\Config::factory($importObject);
 
         foreach ($importFields as $name)
             if ($importObjectConfig->fieldExists($name))
-                $this->_importOrmField($name, $importObjectConfig);
+                $this->importOrmField($name, $importObjectConfig);
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 
     /**
      * Import DB fields into the form object
      */
-    public function importdbfieldsAction()
+    public function importDbFieldsAction()
     {
-        $connection = Request::post('connection', 'string', false);
-        $table = Request::post('table', 'string', false);
-        $conType = Request::post('type', 'integer', false);
+        if(!$this->checkLoaded() || !$this->checkObject()){
+            return;
+        }
+        $connection = $this->request->post('connection', 'string', false);
+        $table = $this->request->post('table', 'string', false);
+        $conType = $this->request->post('type', 'integer', false);
 
-        $importFields = Request::post('importfields', 'array', array());
+        $importFields = $this->request->post('importfields', 'array', array());
 
         if ($connection === false || !$table || empty($importFields) || $conType === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
-        $conManager = new \Dvelum\Db\Manager($this->_configMain);
+        $conManager = new \Dvelum\Db\Manager($this->appConfig);
 
         try {
             $db = $conManager->getDbConnection($connection, $conType);
-        } catch (Exception $e) {
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        } catch (\Exception $e) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
             return;
         }
 
         $columns = $db->getMeta()->getColumnsAsArray($table);
 
-        if (empty($columns))
-            Response::jsonError($this->_lang->CANT_CONNECT);
+        if (empty($columns)){
+            $this->response->error($this->lang->get('CANT_CONNECT'));
+            return;
+        }
+
 
         foreach ($importFields as $name)
             if (isset($columns[$name]) && !empty($columns[$name]))
-                $this->_importDbField($name, $columns[$name]);
+                $this->importDbField($name, $columns[$name]);
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 
     /**
-     * Conver field from ORM format and add to the project
+     * Convert field from ORM format and add to the project
      * @param string $name
-     * @param Db_Object_Config $importObject
+     * @param ConfigInterface $importObjectConfig
      */
-    protected function _importOrmField($name, $importObjectConfig)
+    protected function importOrmField($name, ConfigInterface $importObjectConfig)
     {
-        $newField = Backend_Designer_Import::convertOrmFieldToExtField($name, $importObjectConfig->getFieldConfig($name));
+        $newField = \Backend_Designer_Import::convertOrmFieldToExtField($name, $importObjectConfig->getFieldConfig($name));
         if ($newField !== false) {
-            $newField->setName($this->_object->getName() . '_' . $name);
-            $this->_project->addObject($this->_object->getName(), $newField);
+            $newField->setName($this->object->getName() . '_' . $name);
+            $this->project->addObject($this->object->getName(), $newField);
         }
 
     }
@@ -111,12 +141,12 @@ class Backend_Designer_Sub_Form extends Backend_Designer_Sub
      * @param string $name
      * @param array $config
      */
-    protected function _importDbField($name, $config)
+    protected function importDbField($name, $config)
     {
-        $newField = Backend_Designer_Import::convertDbFieldToExtField($config);
+        $newField = \Backend_Designer_Import::convertDbFieldToExtField($config);
         if ($newField !== false) {
-            $newField->setName($this->_object->getName() . '_' . $name);
-            $this->_project->addObject($this->_object->getName(), $newField);
+            $newField->setName($this->object->getName() . '_' . $name);
+            $this->project->addObject($this->object->getName(), $newField);
         }
     }
 }
