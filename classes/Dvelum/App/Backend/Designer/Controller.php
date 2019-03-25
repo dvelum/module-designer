@@ -58,7 +58,7 @@ class Controller extends Backend\Controller
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/search/searchcursor.js',
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/search/match-highlighter.js',
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/selection/active-line.js',
-        '/resources/dvelum-module-designer/js/lib/CodeMirror/mode/javascript/javascript.js',
+        '/resources/dvelum-module-designer/js/lib/CodeMirror/mode/javascript/javascript.js'
 
     ];
     /**
@@ -131,7 +131,12 @@ class Controller extends Backend\Controller
 
     ];
 
-
+    /**
+     * Controller constructor.
+     * @param Request $request
+     * @param Response $response
+     * @throws \Exception
+     */
     public function __construct(Request $request, Response $response)
     {
         parent::__construct($request, $response);
@@ -139,16 +144,25 @@ class Controller extends Backend\Controller
         $this->version = Config::storage()->get('versions.php')->get('designer');
     }
 
+    /**
+     * @return string
+     */
     public function getModule(): string
     {
         return 'Dvelum_Designer';
     }
 
+    /**
+     * @return string
+     */
     public function getObjectName(): string
     {
         return 'Dvelum_Designer';
     }
 
+    /**
+     * @throws \Exception
+     */
     public function indexAction()
     {
         $configBackend = Config::storage()->get('backend.php');
@@ -201,6 +215,9 @@ class Controller extends Backend\Controller
 
     }
 
+    /**
+     * @throws \Exception
+     */
     public function subAction()
     {
         $subController = $this->request->getPart(3);
@@ -210,7 +227,7 @@ class Controller extends Backend\Controller
             return;
         }
 
-        $subController = 'Backend_Designer_Sub_' . ucfirst(Filter::filterValue('pagecode', $subController));
+        $subController = '\\Dvelum\\App\\Backend\\Designer\\Module\\' . ucfirst(Filter::filterValue('pagecode', $subController));
         $subAction = Filter::filterValue('pagecode', $subAction) . 'Action';
 
         if (!class_exists($subController) || !method_exists($subController, $subAction)) {
@@ -218,10 +235,12 @@ class Controller extends Backend\Controller
             return;
         }
 
-        $sub = new $subController();
+        $sub = new $subController($this->request, $this->response);
         $sub->$subAction();
 
-        $this->response->send();
+        if (!$this->response->isSent()) {
+            $this->response->send();
+        }
     }
 
     /**
@@ -262,14 +281,14 @@ class Controller extends Backend\Controller
         }
 
         $subAction .= 'Action';
-        $subController = 'Backend_Designer_Debugger';
+        $subController = '\\Dvelum\\App\\Backend\\Designer\\Debugger';
 
         if (!method_exists($subController, $subAction)) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
             return;
         }
 
-        $sub = new $subController();
+        $sub = new $subController($this->request, $this->response);
         $sub->$subAction();
 
         $this->response->send();
