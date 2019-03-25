@@ -1,25 +1,47 @@
 <?php
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-use Dvelum\Orm;
+namespace Dvelum\App\Backend\Designer\Module;
 
-class Backend_Designer_Sub_Orm extends Backend_Designer_Sub
+use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Orm\Record;
+
+class Orm extends Module
 {
     /**
      * Get list of objects from ORM
      */
     public function listAction()
     {
-        $manager = new Orm\Record\Manager();
+        $manager = new Record\Manager();
         $objects = $manager->getRegisteredObjects();
-        $data = array();
+        $data = [];
 
         if (!empty($objects)) {
             foreach ($objects as $name) {
-                $data[] = array('name' => $name, 'title' => Orm\Record\Config::factory($name)->getTitle());
+                $data[] = [
+                    'name' => $name,
+                    'title' => Orm\Record\Config::factory($name)->getTitle()
+                ];
             }
         }
-
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 
     /**
@@ -29,21 +51,23 @@ class Backend_Designer_Sub_Orm extends Backend_Designer_Sub
     {
         $objectName = Request::post('object', 'string', false);
         if (!$objectName) {
-            Response::jsonError($this->_lang->get('WRONG_REQUEST'));
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
         }
 
         try {
-            $config = Orm\Record\Config::factory($objectName);
-        } catch (Exception $e) {
-            Response::jsonError($this->_lang->get('WRONG_REQUEST'));
+            $config = Record\Config::factory($objectName);
+        } catch (\Exception $e) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
         }
 
         $fields = $config->getFieldsConfig();
         if (empty($fields)) {
-            Response::jsonSuccess(array());
+            $this->response->success([]);
         }
 
-        $data = array();
+        $data = [];
 
         foreach ($fields as $name => $cfg)
         {
@@ -52,27 +76,26 @@ class Backend_Designer_Sub_Orm extends Backend_Designer_Sub
 
             if ($field->isLink()){
                 if ($field->isDictionaryLink()){
-                    $type = $this->_lang->get('DICTIONARY_LINK') . '"' . $config->getField($name)->getLinkedDictionary() . '"';
+                    $type = $this->lang->get('DICTIONARY_LINK') . '"' . $config->getField($name)->getLinkedDictionary() . '"';
                 } else {
                     $obj = $field->getLinkedObject();
                     $oName = $obj . '';
                     try {
-                        $oCfg = Orm\Record\Config::factory($obj);
+                        $oCfg = Record\Config::factory($obj);
                         $oName .= ' (' . $oCfg->get('title') . ')';
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         //empty on error
                     }
-                    $type = $this->_lang->get('OBJECT_LINK') . ' - ' . $oName;
+                    $type = $this->lang->get('OBJECT_LINK') . ' - ' . $oName;
                 }
             }
 
-            $data[] = array(
+            $data[] = [
                 'name' => $name,
                 'title' => $cfg['title'],
                 'type' => $type
-            );
+            ];
         }
-
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 }

@@ -1,190 +1,239 @@
 <?php
-class Backend_Designer_Sub_Methods extends Backend_Designer_Sub
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Filter;
+
+class Methods extends Module
 {
-  /**
-   * Get list of Project methods
-   */
-  public function listAction()
-  {
-    $project = $this->_getProject();
-    $methods =  $project->getMethodManager()->getMethods();
-     
-    $result = array();
-    foreach ($methods as $object=>$list){
-      foreach($list as $item) {
-        if ($this->_getProject()->objectExists($object)) {
-          $result[] = $this->_methodToArray($item, $object);
-        }
-      }
-    }
-    Response::jsonSuccess($result);
-  }
-  
-  /**
-   * Conver method object into array
-   * @param Designer_Project_Methods_Item $method
-   * @param string $objectName
-   * @return array
-   */
-  protected function _methodToArray(Designer_Project_Methods_Item $method , $objectName)
-  {
-    $object = $this->_getProject()->getObject($objectName);    
-    $code = $method->getCode();
-    
-    return array(
-      'object'=>$objectName,
-      'method'=>$method->getName(),
-      'params'=> $method->getParamsAsDescription(),
-      'has_code'=>(!empty($code)),
-      'description'=>$method->getDescription(),
-      'enabled'=>$object->isExtendedComponent()
-    );
-  }
-  
-  /**
-   * Get list of object methods
-   */
-  public function objectmethodsAction()
-  {
-     $project = $this->_getProject();   
-     $name = Request::post('object' , 'string' , '');
-    
-     if(!strlen($name) || ! $project->objectExists($name))
-       Response::jsonSuccess(array());
-    
-     $object = $project->getObject($name);  
-     $objectName = $object->getName();
-     $objectMethods =  $project->getMethodManager()->getObjectMethods($objectName);
-     
-     $result = array();
-     foreach ($objectMethods as $item)
-       $result[] = $this->_methodToArray($item , $name);
-     
-     Response::jsonSuccess($result);
-  }
-  
-  /**
-   * Add new object method
-   */
-  public function addmethodAction()
-  {
-    $project = $this->_getProject();
-    $objectName = Request::post('object' , 'string' , '');
-    $objectMethodSrc = Request::post('method' , 'string' , '');
-    $objectMethod = Filter::filterValue(Filter::FILTER_ALPHANUM, $objectMethodSrc);
-    
-    if(!strlen($objectName) || ! $project->objectExists($objectName))
-      Response::jsonError($this->_lang->get('WRONG_REQUEST'));
-    
-    if(!strlen($objectMethodSrc))
-      Response::jsonError($this->_lang->get('CANT_BE_EMPTY'));
-        
-    if($objectMethodSrc!==$objectMethod)
-      Response::jsonError($this->_lang->get('INVALID_VALUE'));
-    
-    $methodsManager =  $project->getMethodManager();
-    
-    if($methodsManager->methodExists($objectName, $objectMethod))
-      Response::jsonError($this->_lang->get('SB_UNIQUE'));
-    
-    if(!$methodsManager->addMethod($objectName, $objectMethod))
-      Response::jsonError($this->_lang->get('CANT_EXEC'));
-    
-    $this->_storeProject();
-    
-    Response::jsonSuccess();
-  }
-  
-  /**
-   * Remove object method
-   */
-  public function removemethodAction()
-  {
-    $project = $this->_getProject();
-    $objectName = Request::post('object' , 'string' , '');
-    $objectMethod = Request::post('method' , Filter::FILTER_ALPHANUM , '');
-    
-    $methodManager  = $project->getMethodManager();
-    
-    if(!strlen($objectName) || ! $project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod))
-        Response::jsonError($this->_lang->get('WRONG_REQUEST'));
-    
-    $methodManager->removeMethod($objectName, $objectMethod);
-    $this->_storeProject();
-    Response::jsonSuccess();
-  }
-  
-  /**
-   * Get method data (name , params , code)
-   */
-  public function methoddataAction()
-  {
-    $project = $this->_getProject();
-    $objectName = Request::post('object' , 'string' , '');
-    $objectMethod = Request::post('method' , Filter::FILTER_ALPHANUM , '');
-    
-    $methodManager  = $project->getMethodManager();
-    
-    if(!strlen($objectName) || ! $project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod))
-        Response::jsonError($this->_lang->get('WRONG_REQUEST'));
-    
-    $method = $methodManager->getObjectMethod($objectName, $objectMethod);
-    Response::jsonSuccess($method->toArray());
-  }
-  /**
-   * Update method data
-   */
-  public function updateAction()
-  {
-    $project = $this->_getProject();
-    $objectName = Request::post('object' , 'string' , '');
-    $objectMethod = Request::post('method' , Filter::FILTER_ALPHANUM , '');
-    
-    $newName = Request::post('method_name' , Filter::FILTER_ALPHANUM , '');
-    $description =  Request::post('description' , Filter::FILTER_STRING , '');
-    $code =  Request::post('code' , Filter::FILTER_RAW ,'');
-    $params = Request::post('params' , Filter::FILTER_STRING ,'');
-    
-    $methodManager  = $project->getMethodManager();
-    
-    if(!strlen($objectName) || ! $project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod))
-        Response::jsonError($this->_lang->get('WRONG_REQUEST'));
-    
-    if(!strlen($newName))
-      Response::jsonError($this->_lang->get('FILL_FORM') , array('method_name'=>$this->_lang->get('CANT_BE_EMPTY')));
-    
-    if($objectMethod !== $newName)
+    /**
+     * Get list of Project methods
+     */
+    public function listAction()
     {
-       if($methodManager->methodExists($objectName, $newName))       
-         Response::jsonError($this->_lang->get('FILL_FORM') , array('method_name'=>$this->_lang->get('SB_UNIQUE')));
-       
-       if(!$methodManager->renameMethod($objectName, $objectMethod, $newName))
-         Response::jsonError($this->_lang->get('CANT_EXEC').' (rename)');
-    }
-        
-    $method = $methodManager->getObjectMethod($objectName, $newName);
-    
-    $method->setDescription($description);
-    $method->setCode($code);
-    $paramsArray = array();
-    if(!empty($params))
-    {
-      $params = explode(',', trim($params));
-      foreach ($params as $k=>$v)
-      {
-        $param = explode(' ', trim($v));
-        if(count($param) == 1)
-        {
-          $paramsArray[] = array('name'=>trim($v) ,'type'=>'');
-        }else{
-          $pName = array_pop($param);
-          $ptype = trim(implode(' ', str_replace('  ', ' ',$param)));
-          $paramsArray[] = array('name'=>$pName ,'type'=>$ptype);
+        $project = $this->getProject();
+        $methods = $project->getMethodManager()->getMethods();
+
+        $result = [];
+        foreach ($methods as $object => $list) {
+            foreach ($list as $item) {
+                if ($this->getProject()->objectExists($object)) {
+                    $result[] = $this->methodToArray($item, $object);
+                }
+            }
         }
-      }
+        $this->response->success($result);
     }
-    $method->setParams($paramsArray);    
-    $this->_storeProject();
-    Response::jsonSuccess();
-  }
+
+    /**
+     * Conver method object into array
+     * @param \Designer_Project_Methods_Item $method
+     * @param string $objectName
+     * @return array
+     */
+    protected function methodToArray(\Designer_Project_Methods_Item $method, string $objectName) : array
+    {
+        $object = $this->getProject()->getObject($objectName);
+        $code = $method->getCode();
+        return [
+            'object' => $objectName,
+            'method' => $method->getName(),
+            'params' => $method->getParamsAsDescription(),
+            'has_code' => (!empty($code)),
+            'description' => $method->getDescription(),
+            'enabled' => $object->isExtendedComponent()
+        ];
+    }
+
+    /**
+     * Get list of object methods
+     */
+    public function objectMethodsAction()
+    {
+        $project = $this->getProject();
+        $name = $this->request->post('object', 'string', '');
+
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->success([]);
+            return;
+        }
+
+        $object = $project->getObject($name);
+        $objectName = $object->getName();
+        $objectMethods = $project->getMethodManager()->getObjectMethods($objectName);
+
+        $result = [];
+
+        foreach ($objectMethods as $item) {
+            $result[] = $this->methodToArray($item, $name);
+        }
+
+        $this->response->success($result);
+    }
+
+    /**
+     * Add new object method
+     */
+    public function addMethodAction()
+    {
+        $project = $this->getProject();
+        $objectName = $this->request->post('object', 'string', '');
+        $objectMethodSrc = $this->request->post('method', 'string', '');
+        $objectMethod = Filter::filterValue(Filter::FILTER_ALPHANUM, $objectMethodSrc);
+
+        if (!strlen($objectName) || !$project->objectExists($objectName)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        if (!strlen($objectMethodSrc)) {
+            $this->response->error($this->lang->get('CANT_BE_EMPTY'));
+            return;
+        }
+
+        if ($objectMethodSrc !== $objectMethod) {
+            $this->response->error($this->lang->get('INVALID_VALUE'));
+            return;
+        }
+
+        $methodsManager = $project->getMethodManager();
+
+        if ($methodsManager->methodExists($objectName, $objectMethod)) {
+            $this->response->error($this->lang->get('SB_UNIQUE'));
+            return;
+        }
+
+        if (!$methodsManager->addMethod($objectName, $objectMethod)) {
+            $this->response->error($this->lang->get('CANT_EXEC'));
+            return;
+        }
+
+        $this->storeProject();
+        $this->response->success();
+    }
+
+    /**
+     * Remove object method
+     */
+    public function removeMethodAction()
+    {
+        $project = $this->getProject();
+        $objectName = $this->request->post('object', 'string', '');
+        $objectMethod = $this->request->post('method', Filter::FILTER_ALPHANUM, '');
+
+        $methodManager = $project->getMethodManager();
+
+        if (!strlen($objectName) || !$project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod)) {
+           $this->response->error($this->lang->get('WRONG_REQUEST'));
+           return;
+        }
+
+        $methodManager->removeMethod($objectName, $objectMethod);
+        $this->storeProject();
+        $this->response->success();
+    }
+
+    /**
+     * Get method data (name , params , code)
+     */
+    public function methoddataAction()
+    {
+        $project = $this->getProject();
+        $objectName = $this->request->post('object', 'string', '');
+        $objectMethod = $this->request->post('method', Filter::FILTER_ALPHANUM, '');
+
+        $methodManager = $project->getMethodManager();
+
+        if (!strlen($objectName) || !$project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $method = $methodManager->getObjectMethod($objectName, $objectMethod);
+        $this->response->success($method->toArray());
+    }
+
+    /**
+     * Update method data
+     */
+    public function updateAction()
+    {
+        $project = $this->getProject();
+        $objectName = $this->request->post('object', 'string', '');
+        $objectMethod = $this->request->post('method', Filter::FILTER_ALPHANUM, '');
+
+        $newName = $this->request->post('method_name', Filter::FILTER_ALPHANUM, '');
+        $description = $this->request->post('description', Filter::FILTER_STRING, '');
+        $code = $this->request->post('code', Filter::FILTER_RAW, '');
+        $params = $this->request->post('params', Filter::FILTER_STRING, '');
+
+        $methodManager = $project->getMethodManager();
+
+        if (!strlen($objectName) || !$project->objectExists($objectName) || !strlen($objectMethod) || !$methodManager->methodExists($objectName, $objectMethod)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        if (!strlen($newName)) {
+            $this->response->error(
+                $this->lang->get('FILL_FORM'),
+                ['method_name' => $this->lang->get('CANT_BE_EMPTY')]
+            );
+            return;
+        }
+
+        if ($objectMethod !== $newName) {
+            if ($methodManager->methodExists($objectName, $newName)) {
+                $this->response->error($this->lang->get('FILL_FORM'),
+                    ['method_name' => $this->lang->get('SB_UNIQUE')]
+                );
+                return;
+            }
+
+            if (!$methodManager->renameMethod($objectName, $objectMethod, $newName)) {
+                $this->response->error($this->lang->get('CANT_EXEC') . ' (rename)');
+                return;
+            }
+        }
+
+        $method = $methodManager->getObjectMethod($objectName, $newName);
+
+        $method->setDescription($description);
+        $method->setCode($code);
+        $paramsArray = [];
+        if (!empty($params)) {
+            $params = explode(',', trim($params));
+            foreach ($params as $v) {
+                $param = explode(' ', trim($v));
+                if (count($param) == 1) {
+                    $paramsArray[] = ['name' => trim($v), 'type' => ''];
+                } else {
+                    $pName = array_pop($param);
+                    $ptype = trim(implode(' ', str_replace('  ', ' ', $param)));
+                    $paramsArray[] = ['name' => $pName, 'type' => $ptype];
+                }
+            }
+        }
+        $method->setParams($paramsArray);
+        $this->storeProject();
+        $this->response->success();
+    }
 }

@@ -1,13 +1,41 @@
 <?php
-class Backend_Designer_Sub_Properties extends Backend_Designer_Sub
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Config;
+use Dvelum\File;
+use Dvelum\Filter;
+use Dvelum\Utils;
+
+class Properties extends Module
 {
     /**
      * Get object properties
      */
     public function listAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
+        if (!$this->checkLoaded()) {
+            return;
+        }
+        $object = $this->getObject();
 
         $class = $object->getClass();
         $properties = $object->getConfig()->__toArray();
@@ -15,7 +43,7 @@ class Backend_Designer_Sub_Properties extends Backend_Designer_Sub
         /*
          * Hide unused properties
          */
-        switch ($class){
+        switch ($class) {
             case 'Docked':
                 unset($properties['items']);
                 break;
@@ -27,154 +55,172 @@ class Backend_Designer_Sub_Properties extends Backend_Designer_Sub
         //unset($properties['isExtended']);
         unset($properties['extend']);
 
-        if(isset($properties['dockedItems']))
+        if (isset($properties['dockedItems'])) {
             unset($properties['dockedItems']);
+        }
 
-        if(isset($properties['menu']))
+        if (isset($properties['menu'])) {
             unset($properties['menu']);
+        }
 
-        if(isset($properties['store']))
+        if (isset($properties['store'])) {
             $properties['store'] = '';
+        }
 
-        Response::jsonSuccess($properties);
+        $this->response->success($properties);
     }
+
     /**
      * Set object property
      */
-    public function setpropertyAction()
+    public function setPropertyAction()
     {
-        $this->_checkLoaded();
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        $object = $this->_getObject();
-        $project = $this->_getProject();
+        $object = $this->getObject();
+        $project = $this->getProject();
 
-        $property = Request::post('name', 'string', false);
-        $value = Request::post('value', 'raw', false);
+        $property = $this->request->post('name', 'string', false);
+        $value = $this->request->post('value', 'raw', false);
 
+        if (!$object->isValidProperty($property)) {
+            $this->response->error();
+            return;
+        }
 
-        if(!$object->isValidProperty($property))
-            Response::jsonError();
-
-        if($property === 'isExtended')
-        {
+        if ($property === 'isExtended') {
             $parent = $project->getParent($object->getName());
-            if($parent){
-                Response::jsonError($this->_lang->get('CANT_EXTEND_CHILD'));
+            if ($parent) {
+                $this->response->error($this->lang->get('CANT_EXTEND_CHILD'));
+                return;
             }
         }
 
-        $object->$property = $value;
+        $object->set($property, $value);
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+
+        $this->response->success();
     }
+
     /**
      * Get list of existing ORM dictionaries
      */
-    public function listdictionariesAction()
+    public function listDictionariesAction()
     {
-        $manager = Dictionary_Manager::factory();
+        $manager = \Dictionary_Manager::factory();
         $list = $manager->getList();
-        $data = array();
-        if(!empty($list))
-            foreach ($list as $k=>$v)
-                $data[] = array('id'=>$v,'title'=>$v);
-        Response::jsonArray($data);
+        $data = [];
+        if (!empty($list)) {
+            foreach ($list as $v) {
+                $data[] = ['id' => $v, 'title' => $v];
+            }
+        }
+
+        $this->response->json($data);
     }
 
     /**
      * Get list of store filds
      */
-    public function storefieldsAction()
+    public function storeFieldsAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
-        $project = $this->_getProject();
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        if(!$object->isValidProperty('store'))
-            Response::jsonArray([]);
+        $object = $this->getObject();
+        $project = $this->getProject();
 
-        $storeName = str_replace([Designer_Project_Code::$NEW_INSTANCE_TOKEN,' '],'',$object->store);
+        if (!$object->isValidProperty('store')) {
+            $this->response->json([]);
+            return;
+        }
 
-        if(!$project->objectExists($storeName))
-            Response::jsonArray([]);
+        $storeName = str_replace([\Designer_Project_Code::$NEW_INSTANCE_TOKEN, ' '], '', $object->store);
+
+        if (!$project->objectExists($storeName)) {
+            $this->response->json([]);
+            return;
+        }
 
         $store = $project->getObject($storeName);
 
-        if($store instanceof Ext_Object_Instance){
+        if ($store instanceof \Ext_Object_Instance) {
             $store = $store->getObject();
         }
 
-        $fields = array();
+        $fields = [];
 
 
-        if($store->isValidProperty('model') && strlen($store->model) && $project->objectExists($store->model))
-        {
+        if ($store->isValidProperty('model') && strlen($store->model) && $project->objectExists($store->model)) {
             $model = $project->getObject($store->model);
 
-            if($model->isValidProperty('fields'))
-            {
+            if ($model->isValidProperty('fields')) {
                 $fields = $model->fields;
-                if(is_string($fields))
-                    $fields = json_decode($model->fields , true);
+                if (is_string($fields)) {
+                    $fields = json_decode($model->fields, true);
+                }
             }
         }
 
-        if(empty($fields) && $store->isValidProperty('fields'))
-        {
+        if (empty($fields) && $store->isValidProperty('fields')) {
             $fields = $store->fields;
 
-            if(empty($fields))
-                $fields = array();
+            if (empty($fields)) {
+                $fields = [];
+            }
 
-            if(is_string($fields))
-                $fields = json_decode($fields , true);
+            if (is_string($fields)) {
+                $fields = json_decode($fields, true);
+            }
         }
 
-        $data = array();
-        if(!empty($fields))
-        {
-            foreach ($fields as $item)
-                if(is_object($item))
-                    $data[] = array('id'=>$item->name);
-                else
-                    $data[] = array('id'=>$item['name']);
+        $data = [];
+        if (!empty($fields)) {
+            foreach ($fields as $item) {
+                if (is_object($item)) {
+                    $data[] = ['id' => $item->name];
+                } else {
+                    $data[] = ['id' => $item['name']];
+                }
+            }
         }
 
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 
     /**
      * Get list of existing form field adapters
      */
-    public function listadaptersAction()
+    public function listAdaptersAction()
     {
-        $data = array();
+        $data = [];
         $autoloaderPaths = Config::storage()->get('autoloader.php')->get('paths');
-        $files = array();
-        $classes = array();
+        $files = [];
+        $classes = [];
 
-        foreach($autoloaderPaths as $path)
-        {
-            $scanPath = $path. '/'. $this->_config->get('field_components');
-            if(is_dir($scanPath))
-            {
-                $files = array_merge($files, File::scanFiles($scanPath, array('.php'), true, File::Files_Only));
-                if(!empty($files))
-                {
-                    foreach ($files as $item)
-                    {
+        foreach ($autoloaderPaths as $path) {
+            $scanPath = $path . '/' . $this->designerConfig->get('field_components');
+            if (is_dir($scanPath)) {
+                $files = array_merge($files, File::scanFiles($scanPath, ['.php'], true, File::Files_Only));
+                if (!empty($files)) {
+                    foreach ($files as $item) {
                         $class = Utils::classFromPath(str_replace($autoloaderPaths, '', $item));
-                        if(!in_array($class,$classes))
-                        {
-                            $data[] = array('id' => $class, 'title' => str_replace($scanPath.'/', '', substr($item, 0, -4)));
-                            array_push($classes,$class);
+                        if (!in_array($class, $classes)) {
+                            $data[] = [
+                                'id' => $class,
+                                'title' => str_replace($scanPath . '/', '', substr($item, 0, -4))
+                            ];
+                            array_push($classes, $class);
                         }
                     }
                 }
             }
         }
-        Response::jsonArray($data);
+        $this->response->json($data);
     }
 
     /**
@@ -182,126 +228,137 @@ class Backend_Designer_Sub_Properties extends Backend_Designer_Sub
      */
     public function changetypeAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
-        $type = Request::post('type', 'string', false);
-        $adapter = Request::post('adapter', 'string', false);
-        $dictionary = Request::post('dictionary', 'string', false);
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        if($type === 'Form_Field_Adapter')
-        {
-            $newObject = Ext_Factory::object($adapter);
+        $object = $this->getObject();
+        $type = $this->request->post('type', 'string', false);
+        $adapter = $this->request->post('adapter', 'string', false);
+        $dictionary = $this->request->post('dictionary', 'string', false);
+
+        if ($type === 'Form_Field_Adapter') {
+            $newObject = \Ext_Factory::object($adapter);
             /*
              * Invalid adapter
              */
-            if(!$adapter || !strlen($adapter) || !class_exists($adapter))
-                Response::jsonError($this->_lang->INVALID_VALUE , array('adapter'=>$this->_lang->INVALID_VALUE ));
+            if (!$adapter || !strlen($adapter) || !class_exists($adapter)) {
+                $this->response->error($this->lang->get('INVALID_VALUE'),
+                    ['adapter' => $this->lang->get('INVALID_VALUE')]);
+                return;
+            }
 
-            if($adapter==='Ext_Component_Field_System_Dictionary')
-            {
+
+            if ($adapter === 'Ext_Component_Field_System_Dictionary') {
                 /*
                  * Inavalid dictionary
                  */
-                if(!$dictionary || !strlen($dictionary))
-                    Response::jsonError($this->_lang->INVALID_VALUE , array('dictionary'=>$this->_lang->INVALID_VALUE));
+                if (!$dictionary || !strlen($dictionary)) {
+                    $this->response->error($this->lang->get('INVALID_VALUE'),
+                        ['dictionary' => $this->lang->get('INVALID_VALUE')]);
+                    return;
+                }
 
                 $newObject->dictionary = $dictionary;
                 $newObject->displayField = 'title';
                 $newObject->valueField = 'id';
-
             }
-        }
-        else
-        {
-            $newObject = Ext_Factory::object($type);
+        } else {
+            $newObject = \Ext_Factory::object($type);
             /*
              * No changes
              */
-            if($type === $object->getClass())
-                Response::jsonSuccess();
+            if ($type === $object->getClass()) {
+                $this->response->success();
+                return;
+            }
         }
 
-        Ext_Factory::copyProperties($object , $newObject);
+        \Ext_Factory::copyProperties($object, $newObject);
         $newObject->setName($object->getName());
-        $this->_getProject()->replaceObject($object->getName() , $newObject);
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->getProject()->replaceObject($object->getName(), $newObject);
+        $this->storeProject();
+
+        $this->response->success();
     }
 
     public function storeLoadAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
+        if (!$this->checkLoaded()) {
+            return;
+        }
+
+        $object = $this->getObject();
         $data = [];
 
         $store = $object->store;
 
-        if(empty($store) || is_string($store))
-        {
-            if(strpos($store, Designer_Project_Code::$NEW_INSTANCE_TOKEN)!==false){
+        if (empty($store) || is_string($store)) {
+            if (strpos($store, \Designer_Project_Code::$NEW_INSTANCE_TOKEN) !== false) {
                 $data = [
-                    'type'=> 'instance',
-                    'store' => trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '',$store))
+                    'type' => 'instance',
+                    'store' => trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store))
                 ];
-            }else{
+            } else {
                 $data = [
-                    'type'=> 'store',
+                    'type' => 'store',
                     'store' => $store
                 ];
             }
 
-        }
-        elseif($store instanceof Ext_Helper_Store)
-        {
+        } elseif ($store instanceof \Ext_Helper_Store) {
             $data = [
-                'type'=> $store->getType(),
+                'type' => $store->getType(),
             ];
-            switch($store->getType()){
-                case Ext_Helper_Store::TYPE_STORE:
+            switch ($store->getType()) {
+                case \Ext_Helper_Store::TYPE_STORE:
                     $data['store'] = $store->getValue();
                     break;
-                case Ext_Helper_Store::TYPE_INSTANCE:
+                case \Ext_Helper_Store::TYPE_INSTANCE:
                     $data['instance'] = $store->getValue();
                     break;
-                case Ext_Helper_Store::TYPE_JSCODE:
+                case \Ext_Helper_Store::TYPE_JSCODE:
                     $data['call'] = $store->getValue();
                     break;
             }
         }
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 
     public function storeSaveAction()
     {
-        $this->_checkLoaded();
-        $object = $this->_getObject();
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        $storeHelper = new Ext_Helper_Store();
+        $object = $this->getObject();
 
-        $type =  Request::post('type','string',false);
+        $storeHelper = new \Ext_Helper_Store();
 
-        if(!in_array($type , $storeHelper->getTypes() , true)){
-            Response::jsonError($this->_lang->get('FILL_FORM') , array('type'=>$this->_lang->get('INVALID_VALUE')));
+        $type = $this->request->post('type', 'string', false);
+
+        if (!in_array($type, $storeHelper->getTypes(), true)) {
+            $this->response->error($this->lang->get('FILL_FORM'), ['type' => $this->lang->get('INVALID_VALUE')]);
+            return;
         }
 
         $storeHelper->setType($type);
 
-        switch($type){
-            case Ext_Helper_Store::TYPE_STORE:
-                $storeHelper->setValue(Request::post('store' , Filter::FILTER_RAW , ''));
+        switch ($type) {
+            case \Ext_Helper_Store::TYPE_STORE:
+                $storeHelper->setValue($this->request->post('store', Filter::FILTER_RAW, ''));
                 break;
-            case Ext_Helper_Store::TYPE_INSTANCE:
-                $storeHelper->setValue(Request::post('instance' , Filter::FILTER_RAW , ''));
+            case \Ext_Helper_Store::TYPE_INSTANCE:
+                $storeHelper->setValue($this->request->post('instance', Filter::FILTER_RAW, ''));
                 break;
-            case Ext_Helper_Store::TYPE_JSCODE:
-                $storeHelper->setValue(Request::post('call' , Filter::FILTER_RAW , ''));
+            case \Ext_Helper_Store::TYPE_JSCODE:
+                $storeHelper->setValue($this->request->post('call', Filter::FILTER_RAW, ''));
                 break;
-
         }
 
         $object->store = $storeHelper;
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 
 }

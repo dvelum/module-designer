@@ -1,81 +1,117 @@
 <?php
-class Backend_Designer_Sub_Datafield extends Backend_Designer_Sub
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+
+class Datafield extends Module
 {
-	/**
-	 * @var Designer_Project
-	 */
-	protected $_project;
-	/**
-	 * @var Ext_Data_Store
-	 */
-	protected $_object;
+    /**
+     * @var \Designer_Project
+     */
+    protected $project;
+    /**
+     * @var \Ext_Data_Store
+     */
+    protected $object;
 
-	public function __construct()
-	{
-		parent::__construct();
+    /**
+     * @return bool
+     */
+    protected function checkObject(): bool
+    {
+        $name = $this->request->post('object', 'string', '');
+        $project = $this->getProject();
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
 
-		$this->_checkLoaded();
-		$this->_checkObject();
-	}
-	
-	protected function _checkObject()
-	{
-		$name = Request::post('object', 'string', '');
-		$project = $this->_getProject();
-		
-		if(!strlen($name) || !$project->objectExists($name))
-			Response::jsonError($this->_lang->WRONG_REQUEST);
-	
-		$this->_project = $project;
-		$this->_object = $project->getObject($name);
-	}
-	
-	/**
-	 * Set object property
-	 */
-	public function setpropertyAction()
-	{
-	    $id = Request::post('id', 'string', false);
-	    $property = Request::post('name', 'string', false);
-	    $value = Request::post('value', 'string', false);
-	    
-	    if(!$id || !$this->_object->fieldExists($id))
-	        Response::jsonError($this->_lang->WRONG_REQUEST);
-	    
-	    $field = $this->_object->getField($id);
-	    
-	    if(!$field->isValidProperty($property))
-	        Response::jsonError();
-	    
-	    if($property === 'name' && !$this->_object->renameField($field->name , $value))	       
-	        Response::jsonError();
-	    
-	   	$field->$property = $value;
-	   	$this->_storeProject();
-	    Response::jsonSuccess();    
-	}
-	
-	/**
-	 * Get object properties
-	 */
-	public function listAction()
-	{
-	    $id = Request::post('id', 'string', false);
-	
-	    if(!method_exists($this->_object, 'fieldExists')){
-	        Response::jsonError(get_class($this->_object) .'['.$this->_object->getName().'] deprecated type');
-	    }
-	    
-	    if(!$id || !$this->_object->fieldExists($id))
-	        Response::jsonError($this->_lang->WRONG_REQUEST);
+        $this->project = $project;
+        $this->object = $project->getObject($name);
+        return true;
+    }
 
-	    $field = $this->_object->getField($id);
-	    $config = $field->getConfig();
-	    $properties = $config->__toArray();
-	    
-	    if(isset($properties['isExtended']))
-	        unset($properties['isExtended']);
-	    	
-	    Response::jsonSuccess($properties);
-	}
+    /**
+     * Set object property
+     */
+    public function setPropertyAction()
+    {
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+
+        $id = $this->request->post('id', 'string', false);
+        $property = $this->request->post('name', 'string', false);
+        $value = $this->request->post('value', 'string', false);
+
+        if (!$id || !$this->object->fieldExists($id)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $field = $this->object->getField($id);
+
+        if (!$field->isValidProperty($property)) {
+            $this->response->error();
+            return;
+        }
+
+        if ($property === 'name' && !$this->object->renameField($field->name, $value)) {
+            $this->response->error();
+            return;
+        }
+
+        $field->set($property, $value);
+        $this->storeProject();
+        $this->response->success();
+    }
+
+    /**
+     * Get object properties
+     */
+    public function listAction()
+    {
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+
+        $id = $this->request->post('id', 'string', false);
+
+        if (!method_exists($this->_object, 'fieldExists')) {
+            $this->response->error(get_class($this->object) . '[' . $this->object->getName() . '] deprecated type');
+            return;
+        }
+
+        if (!$id || !$this->object->fieldExists($id)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $field = $this->object->getField($id);
+        $config = $field->getConfig();
+        $properties = $config->__toArray();
+
+        if (isset($properties['isExtended'])) {
+            unset($properties['isExtended']);
+        }
+        $this->response->success();
+    }
 }

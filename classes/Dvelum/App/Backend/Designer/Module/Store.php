@@ -1,46 +1,80 @@
 <?php
-class Backend_Designer_Sub_Store extends Backend_Designer_Sub{
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+
+class Store extends Module
+{
+    /**
+     * @var \Designer_Project
+     */
+    protected $project;
+    /**
+     * @var \Ext_Store
+     */
+    protected $object;
 
     /**
-     * @var Designer_Project
+     * @return bool
      */
-    protected $_project;
-    /**
-     * @var Ext_Store
-     */
-    protected $_object;
-
-
-    protected function _checkObject()
+    protected function checkObject(): bool
     {
-        $name = Request::post('object', 'string', '');
-        $project = $this->_getProject();
-        if(!strlen($name) || !$project->objectExists($name) || !in_array($project->getObject($name)->getClass() , Designer_Project::$storeClasses, true))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        $name = $this->request->post('object', 'string', '');
+        $project = $this->getProject();
 
-        $this->_project = $project;
-        $this->_object = $project->getObject($name);
+        if (!strlen($name) || !$project->objectExists($name) || !in_array($project->getObject($name)->getClass(),
+                \Designer_Project::$storeClasses, true)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
+
+        $this->project = $project;
+        $this->object = $project->getObject($name);
+        return true;
     }
 
-    public function importormfieldsAction()
+    public function importOrmFieldsAction()
     {
-        $this->_checkLoaded();
-        $this->_checkObject();
-        $objectName = Request::post('objectName', 'string', false);
-        $fields = Request::post('fields', 'array', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $objectName = $this->request->post('objectName', 'string', false);
+        $fields = $this->request->post('fields', 'array', false);
 
-        $data = Backend_Designer_Import::checkImportORMFields($objectName, $fields);
+        $data = \Backend_Designer_Import::checkImportORMFields($objectName, $fields);
 
-        if(!$data)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if (!$data) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
-        if(!empty($data))
-            foreach ($data as $field)
-                $this->_object->addField($field);
+        if (!empty($data)) {
+            foreach ($data as $field) {
+                $this->object->addField($field);
+            }
+        }
 
-        $this->_storeProject();
+        $this->storeProject();
 
-        Response::jsonSuccess();
+        $this->response->success();
     }
 
     /**
@@ -48,67 +82,78 @@ class Backend_Designer_Sub_Store extends Backend_Designer_Sub{
      */
     public function storeFieldsAction()
     {
-        $this->_checkLoaded();
-        $name = Request::post('object', 'string', '');
-
-        $name = trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
-
-        $project = $this->_getProject();
-
-        if(!strlen($name) || !$project->objectExists($name))
-            Response::jsonError('Undefined Store object');
-
-        $this->_project = $project;
-
-        $this->_object = $project->getObject($name);
-
-        if($this->_object->isInstance())
-            $this->_object = $this->_object->getObject();
-
-        $fields = $this->_object->fields;
-
-        if(is_string($fields)){
-            $fields = json_decode($fields , true);
-        }elseif(is_array($fields) && !empty($fields)){
-            foreach ($fields as $name=>&$field){
-                $field = $field->getConfig()->__toArray(true);
-            }unset ($field);
+        if (!$this->checkLoaded()) {
+            return;
         }
-        Response::jsonSuccess($fields);
+
+        $name = $this->request->post('object', 'string', '');
+        $name = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
+
+        $project = $this->getProject();
+
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->error('Undefined Store object');
+            return;
+        }
+
+        $this->project = $project;
+        $this->object = $project->getObject($name);
+
+        if ($this->object->isInstance()) {
+            $this->object = $this->object->getObject();
+        }
+
+        $fields = $this->object->fields;
+
+        if (is_string($fields)) {
+            $fields = json_decode($fields, true);
+        } elseif (is_array($fields) && !empty($fields)) {
+            foreach ($fields as $name => &$field) {
+                $field = $field->getConfig()->__toArray(true);
+            }
+            unset ($field);
+        }
+        $this->response->success($fields);
     }
+
     /**
      * Get list of object store fields
      */
     public function listStoreFieldsAction()
     {
-        $this->_checkLoaded();
-        $name = Request::post('object', 'string', '');
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        $project = $this->_getProject();
+        $name = $this->request->post('object', 'string', '');
+
+        $project = $this->getProject();
         $object = $project->getObject($name);
 
         $store = $object->store;
 
-        if($store instanceof Ext_Helper_Store){
-            if($store->getType() == Ext_Helper_Store::TYPE_JSCODE){
-                Response::jsonSuccess([]);
-            }else{
+        if ($store instanceof \Ext_Helper_Store) {
+            if ($store->getType() == \Ext_Helper_Store::TYPE_JSCODE) {
+                $this->response->success([]);
+                return;
+            } else {
                 $store = $store->getValue();
             }
         }
-        $store = trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
+        $store = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
 
-        if(!strlen($store) || !$project->objectExists($store)){
-            Response::jsonError('Undefined store object');
+        if (!strlen($store) || !$project->objectExists($store)) {
+            $this->response->error('Undefined Store object');
+            return;
         }
 
         $store = $project->getObject($store);
-        Response::jsonSuccess($this->prepareList($store));
+        $this->response->success($this->prepareList($store));
     }
 
-    protected function prepareList(Ext_Object $object) : array
+    protected function prepareList(\Ext_Object $object): array
     {
-        if($object->isInstance()){
+        if ($object->isInstance()) {
             $object = $object->getObject();
         }
 
@@ -122,43 +167,49 @@ class Backend_Designer_Sub_Store extends Backend_Designer_Sub{
         //            $fields = $model->fields;
         //        }
 
-        if(empty($fields))
+        if (empty($fields)) {
             $fields = $object->fields;
+        }
 
-        if(is_string($fields)){
-            $fields = json_decode($fields , true);
-        }elseif(is_array($fields) && !empty($fields)){
-            foreach ($fields as $name=>&$field){
+        if (is_string($fields)) {
+            $fields = json_decode($fields, true);
+        } elseif (is_array($fields) && !empty($fields)) {
+            foreach ($fields as $name => &$field) {
                 $field = $field->getConfig()->__toArray(true);
-            }unset ($field);
+            }
+            unset ($field);
         }
         return $fields;
     }
+
     /**
      * Get list of store fields
      */
     public function listfieldsAction()
     {
-        $this->_checkLoaded();
-        $name = Request::post('object', 'string', '');
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        $name = trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
+        $name = $this->request->post('object', 'string', '');
+        $name = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
 
-        $project = $this->_getProject();
-        if(!strlen($name) || !$project->objectExists($name))
-            Response::jsonError('Undefined Store object');
+        $project = $this->getProject();
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->error('Undefined Store object');
+            return;
+        }
 
         $object = $project->getObject($name);
-
-        Response::jsonSuccess($this->prepareList($object));
+        $this->response->success($this->prepareList($object));
     }
 
     /**
      * @param $store
-     * @param Designer_Project $project
+     * @param \Designer_Project $project
      * @return array
      */
-    protected function extractFields($store, Designer_Project $project) : array
+    protected function extractFields($store, \Designer_Project $project): array
     {
         if (empty($store)) {
             return [];
@@ -214,124 +265,150 @@ class Backend_Designer_Sub_Store extends Backend_Designer_Sub{
 
     public function allStoreFieldsAction()
     {
-        $this->_checkLoaded();
-        $name = Request::post('object', 'string', '');
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        $project = $this->_getProject();
+        $name = $this->request->post('object', 'string', '');
 
-        if(!strlen($name) || !$project->objectExists($name)){
-            Response::jsonError('Undefined object');
+        $project = $this->getProject();
+
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->error('Undefined object');
+            return;
         }
 
         $object = $project->getObject($name);
         $store = $object->store;
 
-        if($store instanceof Ext_Helper_Store){
-            if($store->getType() == Ext_Helper_Store::TYPE_JSCODE){
-                Response::jsonSuccess([]);
-            }else{
+        if ($store instanceof \Ext_Helper_Store) {
+            if ($store->getType() == \Ext_Helper_Store::TYPE_JSCODE) {
+                $this->response->success([]);
+                return;
+            } else {
                 $store = $store->getValue();
             }
         }
-        $store = trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
+        $store = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
 
-        if(!strlen($store) || !$project->objectExists($store)){
-            Response::jsonError('Undefined stroe object');
-        }
-
-        $store = $project->getObject($store);
-        Response::jsonSuccess($this->extractFields($store, $project));
-    }
-    public function allFieldsAction()
-    {
-        $this->_checkLoaded();
-        $name = Request::post('object', 'string', '');
-
-        $name = trim(str_replace('[new:]','',$name));
-
-        $project = $this->_getProject();
-
-        if(!strlen($name) || !$project->objectExists($name))
-            Response::jsonError('Undefined Store object');
-
-        $store = $project->getObject($name);
-
-        Response::jsonSuccess($this->extractFields($store, $project));
-    }
-
-    public function importdbfieldsAction(){
-        $this->_checkLoaded();
-        $this->_checkObject();
-        $connectionId = Request::post('connectionId','string',false);
-        $table = Request::post('table','string',false);
-        $conType = Request::post('type', 'integer', false);
-        $fields = Request::post('fields', 'array', false);
-
-        if($connectionId === false || !$table || empty($fields) || $conType===false)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
-
-        $conManager = new \Dvelum\Db\Manager($this->_configMain);
-
-        try{
-            $db = $conManager->getDbConnection($connectionId, $conType);
-        }catch (Exception $e){
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if (!strlen($store) || !$project->objectExists($store)) {
+            $this->response->error('Undefined object');
             return;
         }
 
-        $data = Backend_Designer_Import::checkImportDBFields($db, $fields, $table);
+        $store = $project->getObject($store);
+        $this->response->success($this->extractFields($store, $project));
+    }
 
-        if(!$data)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+    public function allFieldsAction()
+    {
+        if (!$this->checkLoaded()) {
+            return;
+        }
 
-        if(!empty($data))
-            foreach ($data as $field)
-                $this->_object->addField($field);
+        $name = $this->request->post('object', 'string', '');
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $name = trim(str_replace('[new:]', '', $name));
+
+        $project = $this->getProject();
+
+        if (!strlen($name) || !$project->objectExists($name)) {
+            $this->response->error('Undefined object');
+            return;
+        }
+
+        $store = $project->getObject($name);
+        $this->response->success($this->extractFields($store, $project));
+    }
+
+    public function importDbFieldsAction()
+    {
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $connectionId = $this->request->post('connectionId', 'string', false);
+        $table = $this->request->post('table', 'string', false);
+        $conType = $this->request->post('type', 'integer', false);
+        $fields = $this->request->post('fields', 'array', false);
+
+        if ($connectionId === false || !$table || empty($fields) || $conType === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $conManager = new \Dvelum\Db\Manager($this->appConfig);
+
+        try {
+            $db = $conManager->getDbConnection($connectionId, $conType);
+        } catch (\Exception $e) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $data = \Backend_Designer_Import::checkImportDBFields($db, $fields, $table);
+
+        if (!$data) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        if (!empty($data)) {
+            foreach ($data as $field) {
+                $this->object->addField($field);
+            }
+        }
+
+        $this->storeProject();
+        $this->response->success();
     }
 
     /**
      * Add store field
      */
-    public function addfieldAction()
+    public function addFieldAction()
     {
-        $this->_checkLoaded();
-        $this->_checkObject();
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
 
-        $id = Request::post('id', 'string', false);
+        $id = $this->request->post('id', 'string', false);
 
-        if(!$id || $this->_object->fieldExists($id))
-            Response::jsonError($this->_lang->FIELD_EXISTS);
+        if (!$id || $this->object->fieldExists($id)) {
+            $this->response->error($this->lang->get('FIELD_EXISTS'));
+            return;
+        }
 
-        if($this->_object->addField(array('name'=>$id,'type'=>'string'))){
-            $o = $this->_object->getField($id);
-            $this->_storeProject();
-            Response::jsonSuccess(array('name'=>$o->name,'type'=>$o->type));
-        }else{
-            Response::jsonError($this->_lang->CANT_EXEC);
+
+        if ($this->object->addField(array('name' => $id, 'type' => 'string'))) {
+            $o = $this->object->getField($id);
+            $this->storeProject();
+            $this->response->success(array('name' => $o->name, 'type' => $o->type));
+        } else {
+            $this->response->error($this->lang->get('CANT_EXEC'));
         }
     }
 
     /**
      * Remove store field
      */
-    public function removefieldAction()
+    public function removeFieldAction()
     {
-        $this->_checkLoaded();
-        $this->_checkObject();
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
 
-        $id = Request::post('id', 'string', false);
+        $id = $this->request->post('id', 'string', false);
 
-        if(!$id)
-            Response::jsonError($this->_lang->FIELD_EXISTS);
+        if (!$id) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
-        if($this->_object->fieldExists($id))
-            $this->_object->removeField($id);
+        if ($this->object->fieldExists($id)) {
+            $this->object->removeField($id);
+        }
 
-        $this->_storeProject();
-
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 }

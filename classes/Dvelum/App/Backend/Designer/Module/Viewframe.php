@@ -99,13 +99,13 @@ class Viewframe extends Module
                      fn:function( ct, column, width,eOpts){
                         app.application.onGridColumnResize("' . $name . '", ct, column, width, eOpts);
                      }
-				}');
+                }');
 
                 $object->addListener('columnmove', '{
                     fn:function(ct, column, fromIdx, toIdx, eOpts){
                         app.application.onGridColumnMove("' . $name . '", ct, column, fromIdx, toIdx, eOpts);
                     }
-				}');
+                }');
             }
         }
 
@@ -150,24 +150,24 @@ class Viewframe extends Module
 
         //' . $project->getCode($replaces) . '
         $initCode = '
-		app.delimiter = "' . $this->appConfig['urlDelimiter'] . '";
-		app.admin = "' . $this->appConfig->get('wwwroot') . $this->appConfig->get('adminPath') . '";
-		app.wwwRoot = "' . $this->appConfig->get('wwwroot') . '";
-
-		var applicationClassesNamespace = "' . $projectCfg['namespace'] . '";
-		var applicationRunNamespace = "' . $projectCfg['runnamespace'] . '";
-		var designerUrlPaths = ["' . implode('","', $basePaths) . '"];
-
-		var canDelete = true;
-		var canPublish = true;
-		var canEdit = true;
-
-		app.permissions = Ext.create("app.PermissionsStorage");
-		var rights = ' . json_encode(User::getInstance()->getPermissions()) . ';
-		app.permissions.setData(rights);
-
-		Ext.onReady(function(){
-		    app.application.mainUrl = app.createUrl(designerUrlPaths);
+        app.delimiter = "' . $this->appConfig['urlDelimiter'] . '";
+        app.admin = "' . $this->appConfig->get('wwwroot') . $this->appConfig->get('adminPath') . '";
+        app.wwwRoot = "' . $this->appConfig->get('wwwroot') . '";
+    
+        var applicationClassesNamespace = "' . $projectCfg['namespace'] . '";
+        var applicationRunNamespace = "' . $projectCfg['runnamespace'] . '";
+        var designerUrlPaths = ["' . implode('","', $basePaths) . '"];
+    
+        var canDelete = true;
+        var canPublish = true;
+        var canEdit = true;
+    
+        app.permissions = Ext.create("app.PermissionsStorage");
+        var rights = ' . json_encode(User::getInstance()->getPermissions()) . ';
+        app.permissions.setData(rights);
+    
+        Ext.onReady(function(){
+            app.application.mainUrl = app.createUrl(designerUrlPaths);
             ';
 
         if (!empty($names)) {
@@ -180,14 +180,14 @@ class Viewframe extends Module
                     $initCode .= \Ext_Code::appendRunNamespace($name) . ' = Ext.create("' . \Ext_Code::appendNamespace($name) . '",{});';
                 }
                 $initCode .= '
-			        app.viewFrame.add(' . \Ext_Code::appendRunNamespace($name) . ');
-			    ';
+                    app.viewFrame.add(' . \Ext_Code::appendRunNamespace($name) . ');
+                ';
             }
         }
 
         $initCode .= '
-        	 app.application.fireEvent("projectLoaded");
-	   });';
+             app.application.fireEvent("projectLoaded");
+       });';
 
         $res->addInlineJs($initCode);
 
