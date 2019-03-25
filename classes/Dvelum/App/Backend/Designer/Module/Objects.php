@@ -33,7 +33,6 @@ class Objects extends Module
         if (!$this->checkLoaded()) {
             return;
         }
-
         $project = $this->getProject();
         $this->response->json($this->fillContainers($project->getTree()));
     }

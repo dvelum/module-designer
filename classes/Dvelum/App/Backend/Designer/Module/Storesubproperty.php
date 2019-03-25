@@ -1,161 +1,202 @@
 <?php
-class Backend_Designer_Sub_Storesubproperty extends Backend_Designer_Sub_Store
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+
+class Storesubproperty extends Module\Store
 {
+    public function proplistAction()
+    {
+        if (!$this->checkObject()) {
+            return;
+        }
 
-	public function __construct(){
-		parent::__construct();
-		$this->_checkObject();
-	}
-	
-	public function proplistAction()
-	{
-		$proxyType = '';
-		$writerType = '';
-		$readerType = '';
-		
-		$proxy = $this->_object->proxy;
-		
-		if(!empty($proxy))
-		{
-			$class = explode('_', $proxy->getClass());
-			$proxyType =  $class[(count($class) -1)];
-				
-			$reader = $this->_object->proxy->reader;
-			if(!empty($reader)){
-				$class = explode('_', $reader->getClass());
-				$readerType =  $class[(count($class) -1)];
-			}
-			
-			$writer = $this->_object->proxy->writer;
-			if(!empty($writer)){
-				$class = explode('_', $writer->getClass());
-				$writerType =  $class[(count($class) -1)];
-			}		
-		}
+        $proxyType = '';
+        $writerType = '';
+        $readerType = '';
 
-		$results = array(
-			array('name'=>'proxy','value'=>strtolower($proxyType)),
-			array('name'=>'reader','value'=>strtolower($readerType)),
-			array('name'=>'writer','value'=>strtolower($writerType)),
-		);
-		
-		Response::jsonSuccess($results);
-	}
-	
-	public function listAction()
-	{
-		$sub = Request::post('sub', 'string', '');
-		if(!in_array($sub , array('proxy','reader','writer')))
-			Response::jsonError($this->_lang->INVALID_REQUEST);	
-			
-		switch ($sub)
-		{
-			case 'proxy':		
-					
-				if($this->_object->proxy===''){
-					$proxy = Ext_Factory::object('Data_Proxy_Ajax');
-					$proxy->reader = Ext_Factory::object('Data_Reader_Json');
-					$proxy->writer =  '';
-					$this->_object->proxy = $proxy;		
-					$this->_storeProject();
-				}	
-				
-				$properties = $this->_object->proxy->getConfig()->__toArray();
-				unset($properties['reader']);
-				unset($properties['writer']);
-				Response::jsonSuccess($properties);
-			break;
-			
-			case 'reader':
-			    if($this->_object->proxy->reader)
-				    Response::jsonSuccess($this->_object->proxy->reader->getConfig()->__toArray());
-			    else 
-			        Response::jsonSuccess(array());
-				break;
-				
-			case 'writer':
-				 if(!isset($this->_object->proxy->writer) || empty($this->_object->proxy->writer))
-				 	Response::jsonSuccess(array());
-				 	
-				 Response::jsonSuccess($this->_object->proxy->writer->getConfig()->__toArray());	
-				break;
-		}			
-	}
-	
-	/**
-	 * Change  subproprty object type
-	 */
-	public function changetypeAction()
-	{
-		$sub = Request::post('sub', 'string', '');
-		$type = Request::post('type', 'string', '');
-		
-		if(!in_array($sub , array('proxy','reader','writer')) || !strlen($type))
-			Response::jsonError($this->_lang->INVALID_REQUEST);
-			
-		$config = array();
-		
-		if($sub == 'proxy')			
-			$obj = $this->_object->proxy;
-		else	
-			$obj = $this->_object->proxy->$sub;
-			
-		if(!empty($obj))
-			$config = $obj->getConfig()->__toArray();
-		
-		if($sub == 'proxy')
-		{
-			$this->_object->proxy = Ext_Factory::object('Data_'.ucfirst($sub).'_' . ucfirst($type),$config);
-			$this->_object->proxy->type = strtolower($type);
-			
-			if($this->_object->proxy->getClass()==='Data_Proxy_Ajax'){
-					$this->_object->proxy->startParam='pager[start]';
-			        $this->_object->proxy->limitParam='pager[limit]';
-			        $this->_object->proxy->sortParam='pager[sort]';
-			        $this->_object->proxy->directionParam='pager[dir]';
-			        $this->_object->proxy->simpleSortMode= true;
-			}			
-		}
-		else
-		{		
-			$this->_object->proxy->$sub = Ext_Factory::object('Data_'.ucfirst($sub).'_' . ucfirst($type),$config);
-			$this->_object->proxy->$sub->type = strtolower($type);
-			
-			if($this->_object->proxy->getClass()==='Data_Reader_Json'){				
-					$this->_object->proxy->$sub->rootProperty = 'data';
-					$this->_object->proxy->$sub->totalProperty = 'count';
-					$this->_object->proxy->$sub->idProperty = 'id';			
-			}
-		}
-		$this->_storeProject();
-		Response::jsonSuccess();
-	}
-	
-	/**
-	 * Set sub object property
-	 */
-	public function setpropertyAction()
-	{
-		$property = Request::post('name', 'raw', false);
-		$value = Request::post('value', 'raw', false);
-		$sub = Request::post('sub', 'string', '');
-		
-		
-		if(!in_array($sub , array('proxy','reader','writer')) || !strlen($property))
-			Response::jsonError($this->_lang->WRONG_REQUEST);
-			
-		if($sub == 'proxy')			
-			$obj = $this->_object->proxy;
-		else	
-			$obj = $this->_object->proxy->$sub;
-			
-		if(!$obj->isValidProperty($property))
-			Response::jsonError();
-			
-		$obj->$property = $value;
+        $proxy = $this->object->proxy;
 
-		$this->_storeProject();
-		Response::jsonSuccess();
-	}
-	
+        if (!empty($proxy)) {
+            $class = explode('_', $proxy->getClass());
+            $proxyType = $class[(count($class) - 1)];
+
+            $reader = $this->object->proxy->reader;
+            if (!empty($reader)) {
+                $class = explode('_', $reader->getClass());
+                $readerType = $class[(count($class) - 1)];
+            }
+
+            $writer = $this->object->proxy->writer;
+
+            if (!empty($writer)) {
+                $class = explode('_', $writer->getClass());
+                $writerType = $class[(count($class) - 1)];
+            }
+        }
+
+        $results = [
+            ['name' => 'proxy', 'value' => strtolower($proxyType)],
+            ['name' => 'reader', 'value' => strtolower($readerType)],
+            ['name' => 'writer', 'value' => strtolower($writerType)],
+        ];
+
+        Response::jsonSuccess($results);
+    }
+
+    public function listAction()
+    {
+        if (!$this->checkObject()) {
+            return;
+        }
+
+        $sub = $this->request->post('sub', 'string', '');
+        if (!in_array($sub, ['proxy', 'reader', 'writer'])) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
+
+        switch ($sub) {
+            case 'proxy':
+
+                if ($this->object->proxy === '') {
+                    $proxy = \Ext_Factory::object('Data_Proxy_Ajax');
+                    $proxy->reader = \Ext_Factory::object('Data_Reader_Json');
+                    $proxy->writer = '';
+                    $this->object->proxy = $proxy;
+                    $this->storeProject();
+                }
+
+                $properties = $this->object->proxy->getConfig()->__toArray();
+                unset($properties['reader']);
+                unset($properties['writer']);
+                $this->response->success($properties);
+                break;
+
+            case 'reader':
+
+                if ($this->object->proxy->reader) {
+                    $this->response->success($this->object->proxy->reader->getConfig()->__toArray());
+                } else {
+                    $this->response->success([]);
+                }
+                break;
+
+            case 'writer':
+                if (!isset($this->object->proxy->writer) || empty($this->object->proxy->writer)) {
+                    $this->response->success([]);
+                }
+
+                $this->response->success($this->object->proxy->writer->getConfig()->__toArray());
+                break;
+        }
+    }
+
+    /**
+     * Change  subproprty object type
+     */
+    public function changeTypeAction()
+    {
+        if (!$this->checkObject()) {
+            return;
+        }
+
+        $sub = $this->request->post('sub', 'string', '');
+        $type = $this->request->post('type', 'string', '');
+
+        if (!in_array($sub, ['proxy', 'reader', 'writer']) || !strlen($type)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
+
+        $config = [];
+
+        if ($sub == 'proxy') {
+            $obj = $this->object->proxy;
+        } else {
+            $obj = $this->object->proxy->$sub;
+        }
+
+        if (!empty($obj)) {
+            $config = $obj->getConfig()->__toArray();
+        }
+
+        if ($sub == 'proxy') {
+            $this->object->proxy = \Ext_Factory::object('Data_' . ucfirst($sub) . '_' . ucfirst($type), $config);
+            $this->object->proxy->type = strtolower($type);
+
+            if ($this->object->proxy->getClass() === 'Data_Proxy_Ajax') {
+                $this->object->proxy->startParam = 'pager[start]';
+                $this->object->proxy->limitParam = 'pager[limit]';
+                $this->object->proxy->sortParam = 'pager[sort]';
+                $this->object->proxy->directionParam = 'pager[dir]';
+                $this->object->proxy->simpleSortMode = true;
+            }
+        } else {
+            $this->object->proxy->$sub = \Ext_Factory::object('Data_' . ucfirst($sub) . '_' . ucfirst($type), $config);
+            $this->object->proxy->$sub->type = strtolower($type);
+
+            if ($this->object->proxy->getClass() === 'Data_Reader_Json') {
+                $this->object->proxy->$sub->rootProperty = 'data';
+                $this->object->proxy->$sub->totalProperty = 'count';
+                $this->object->proxy->$sub->idProperty = 'id';
+            }
+        }
+        $this->storeProject();
+        $this->response->success();
+    }
+
+    /**
+     * Set sub object property
+     */
+    public function setPropertyAction()
+    {
+        if (!$this->checkObject()) {
+            return;
+        }
+        $property = $this->request->post('name', 'raw', false);
+        $value = $this->request->post('value', 'raw', false);
+        $sub = $this->request->post('sub', 'string', '');
+
+
+        if (!in_array($sub, array('proxy', 'reader', 'writer')) || !strlen($property)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
+
+        if ($sub == 'proxy') {
+            $obj = $this->object->proxy;
+        } else {
+            $obj = $this->object->proxy->$sub;
+        }
+
+        if (!$obj->isValidProperty($property)) {
+            $this->response->error();
+            return;
+        }
+
+        $obj->$property = $value;
+
+        $this->storeProject();
+        $this->response->success();
+    }
+
 }
