@@ -49,7 +49,7 @@ class Orm extends Module
      */
     public function fieldsAction()
     {
-        $objectName = Request::post('object', 'string', false);
+        $objectName = $this->request->post('object', 'string', false);
         if (!$objectName) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
             return false;

@@ -1,40 +1,63 @@
 <?php
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
+namespace Dvelum\App\Backend\Designer\Module;
+
+use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Config;
+use Dvelum\File;
+use Dvelum\Filter;
+use Dvelum\Utils;
+
+class Gridcolumn extends Module
 {
     /**
-     * @var Designer_Project
+     * @var \Designer_Project
      */
-    protected $_project;
+    protected $project;
     /**
-     * @var Ext_Grid
+     * @var \Ext_Grid
      */
-    protected $_object;
+    protected $object;
 
-    public function __construct()
+    protected function checkObject() : bool
     {
-        parent::__construct();
-        $this->_checkLoaded();
-        $this->_checkObject();
-    }
-
-    protected function _checkObject()
-    {
-        $name = Request::post('object', 'string', '');
-        $project = $this->_getProject();
-        if (!strlen($name) || !$project->objectExists($name) || $project->getObject($name)->getClass() !== 'Grid')
-            Response::jsonError($this->_lang->WRONG_REQUEST);
-
-        $this->_project = $project;
-        $this->_object = $project->getObject($name);
+        $name = $this->request->post('object', 'string', '');
+        $project = $this->getProject();
+        if (!strlen($name) || !$project->objectExists($name) || $project->getObject($name)->getClass() !== 'Grid') {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return false;
+        }
+        $this->project = $project;
+        $this->object = $project->getObject($name);
+        return true;
     }
 
     /**
      * Get columns list as tree structure
      */
-    public function columnlistAction()
+    public function columnListAction()
     {
-        Response::jsonArray($this->_object->getColumnsList());
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $this->response->json($this->object->getColumnsList());
     }
 
     /**
@@ -42,12 +65,18 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function listAction()
     {
-        $id = Request::post('id', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
 
-        if (!$id || !$this->_object->columnExists($id))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        $id = $this->request->post('id', 'string', false);
 
-        $column = $this->_object->getColumn($id);
+        if (!$id || !$this->object->columnExists($id)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
+
+        $column = $this->object->getColumn($id);
         $config = $column->getConfig();
         $properties = $config->__toArray();
 
@@ -60,7 +89,7 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
             unset($properties['summaryRenderer']);
             unset($properties['summaryType']);
         }
-        Response::jsonSuccess($properties);
+        $this->response->success($properties);
     }
 
     /**
@@ -68,24 +97,32 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function setpropertyAction()
     {
-        $id = Request::post('id', 'string', false);
-        $property = Request::post('name', 'string', false);
-        $value = Request::post('value', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $id = $this->request->post('id', 'string', false);
+        $property = $this->request->post('name', 'string', false);
+        $value = $this->request->post('value', 'string', false);
 
-        if (!$id || !$this->_object->columnExists($id))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
-
-        $object = $this->_object->getColumn($id);
-        if (!$object->isValidProperty($property))
-            Response::jsonError();
-
-        if ($property === 'text') {
-            $value = Request::post('value', 'raw', false);
+        if (!$id || !$this->object->columnExists($id)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
         }
 
-        $object->$property = $value;
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $object = $this->object->getColumn($id);
+        if (!$object->isValidProperty($property)) {
+            $this->response->error('WRONG_REQUEST');
+            return;
+        }
+
+
+        if ($property === 'text') {
+            $value = $this->request->post('value', 'raw', false);
+        }
+
+        $object->set($property, $value);
+        $this->storeProject();
+        $this->response->success();
     }
 
     /**
@@ -93,31 +130,36 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function renderersAction()
     {
-        $data = array();
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $data = [];
         $autoloaderCfg = Config::storage()->get('autoloader.php')->__toArray();
         $autoloaderPaths = $autoloaderCfg['paths'];
-        $files = array();
-        $classes = array();
+        $files = [];
+        $classes = [];
 
-        $data[] = array('id' => '', 'title' => $this->_lang->NO);
+        $data[] = ['id' => '', 'title' => $this->lang->get('NO')];
 
         foreach ($autoloaderPaths as $path) {
-            $scanPath = $path . '/' . $this->_config->get('components') . '/Renderer';
+            $scanPath = $path . '/' . $this->designerConfig->get('components') . '/Renderer';
             if (is_dir($scanPath)) {
-                $files = array_merge($files, File::scanFiles($scanPath, array('.php'), true, File::Files_Only));
+                $files = array_merge($files, File::scanFiles($scanPath, ['.php'], true, File::Files_Only));
                 if (!empty($files)) {
                     foreach ($files as $item) {
                         $class = Utils::classFromPath(str_replace($autoloaderPaths, '', $item));
                         if (!in_array($class, $classes)) {
-                            $data[] = array('id' => $class, 'title' => str_replace($scanPath . '/', '', substr($item, 0, -4)));
+                            $data[] = array(
+                                'id' => $class,
+                                'title' => str_replace($scanPath . '/', '', substr($item, 0, -4))
+                            );
                             array_push($classes, $class);
                         }
                     }
                 }
             }
         }
-
-        Response::jsonArray($data);
+        $this->response->json($data);
     }
 
     /**
@@ -125,14 +167,18 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function dictionariesAction()
     {
-        $manager = Dictionary_Manager::factory();
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+
+        $manager = \Dictionary_Manager::factory();
         $data = [];
         $list = $manager->getList();
 
         foreach ($list as $path) {
             $data[] = ['id' => $path, 'title' => $path];
         }
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 
     /**
@@ -140,26 +186,33 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function changesizeAction()
     {
-        $object = Request::post('object', 'string', false);
-        $column = Request::post('column', 'string', false);
-        $width = Request::post('width', 'integer', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->request->post('object', 'string', false);
+        $column = $this->request->post('column', 'string', false);
+        $width = $this->request->post('width', 'integer', false);
 
-        $project = $this->_getProject();
+        $project = $this->getProject();
 
-        if ($object === false || !$project->objectExists($object) || $column === false || $width === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if ($object === false || !$project->objectExists($object) || $column === false || $width === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $object = $project->getObject($object);
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $column = $object->getColumn($column);
         $column->width = $width;
 
-        $this->_storeProject();
+        $this->storeProject();
 
-        Response::jsonSuccess();
+        $this->response->success();
     }
 
     /**
@@ -167,138 +220,187 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
      */
     public function moveAction()
     {
-        $object = Request::post('object', 'string', false);
-        $order = Request::post('order', 'raw', '');
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->request->post('object', 'string', false);
+        $order = $this->request->post('order', 'raw', '');
 
-        $project = $this->_getProject();
+        $project = $this->getProject();
 
-        if ($object === false || !$project->objectExists($object) || empty($order))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if ($object === false || !$project->objectExists($object) || empty($order)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $order = json_decode($order);
 
-        if (!is_array($order))
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if (!is_array($order)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $object = $project->getObject($object);
 
-        if ($object->getClass() !== 'Grid')
-            Response::jsonError($this->_lang->WRONG_REQUEST);
+        if ($object->getClass() !== 'Grid') {
+            $this->response->error($this->lang->get('WRONG_REQUEST'));
+            return;
+        }
 
         $object->updateColumnsSortingOrder($order);
 
-        $this->_storeProject();
+        $this->storeProject();
 
-        Response::jsonSuccess();
+        $this->response->success();
     }
 
     /**
      * Get list of items for actioncolumn
      */
-    public function itemslistAction()
+    public function itemsListAction()
     {
-        $designerManager = new Designer_Manager($this->_configMain);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $designerManager = new \Designer_Manager($this->appConfig);
 
-        $object = $this->_object;
-        $column = Request::post('column', 'string', false);
+        $object = $this->object;
+        $column = $this->request->post('column', 'string', false);
 
-        if ($column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
         $columnObject = $object->getColumn($column);
 
-        if ($columnObject->getClass() !== 'Grid_Column_Action')
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 3');
+        if ($columnObject->getClass() !== 'Grid_Column_Action') {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 3');
+            return;
+        }
 
-        $result = array();
+        $result = [];
         $actions = $columnObject->getActions();
         if (!empty($actions)) {
             foreach ($actions as $name => $object) {
-                $result[] = array(
+                $result[] = [
                     'id' => $name,
-                    'icon' => Designer_Factory::replaceCodeTemplates($designerManager->getReplaceConfig(), $object->icon),
+                    'icon' => \Designer_Factory::replaceCodeTemplates($designerManager->getReplaceConfig(),
+                        $object->icon),
                     'tooltip' => $object->tooltip
-                );
+                ];
             }
         }
-        Response::jsonSuccess($result);
+        $this->response->success($result);
     }
 
-    public function addactionAction()
+    public function addActionAction()
     {
-        $object = $this->_object;
-        $actionName = Request::post('name', 'alphanum', false);
-        $column = Request::post('column', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->object;
+        $actionName = $this->request->post('name', 'alphanum', false);
+        $column = $this->request->post('column', 'string', false);
 
-        if ($actionName === false || $column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($actionName === false || $column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
         $columnObject = $object->getColumn($column);
 
-        if ($columnObject->getClass() !== 'Grid_Column_Action')
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 3');
+        if ($columnObject->getClass() !== 'Grid_Column_Action') {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 3');
+            return;
+        }
 
-        $actionName = $this->_object->getName() . '_action_' . $actionName;
+        $actionName = $this->object->getName() . '_action_' . $actionName;
 
-        if ($columnObject->actionExists($actionName))
-            Response::jsonError($this->_lang->SB_UNIQUE);
+        if ($columnObject->actionExists($actionName)) {
+            $this->response->error($this->lang->get('SB_UNIQUE'));
+            return;
+        }
 
-        $newButton = Ext_Factory::object('Grid_Column_Action_Button', array('text' => $actionName));
+        $newButton = \Ext_Factory::object('Grid_Column_Action_Button', ['text' => $actionName]);
         $newButton->setName($actionName);
 
         $columnObject->addAction($actionName, $newButton);
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+
+        $this->response->success();
     }
 
-    public function removeactionAction()
+    public function removeActionAction()
     {
-        $object = $this->_object;
-        $actionName = Request::post('name', 'alphanum', false);
-        $column = Request::post('column', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->object;
+        $actionName = $this->request->post('name', 'alphanum', false);
+        $column = $this->request->post('column', 'string', false);
 
-        if ($actionName === false || $column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($actionName === false || $column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
         $columnObject = $object->getColumn($column);
 
-        if ($columnObject->getClass() !== 'Grid_Column_Action')
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 3');
-
+        if ($columnObject->getClass() !== 'Grid_Column_Action') {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 3');
+            return;
+        }
 
         $columnObject->removeAction($actionName);
 
-        $this->_project->getEventManager()->removeObjectEvents($actionName);
+        $this->project->getEventManager()->removeObjectEvents($actionName);
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+
+        $this->response->success();
     }
 
-    public function sortactionsAction()
+    public function sortActionsAction()
     {
-        $object = $this->_object;
-        $order = Request::post('order', 'array', array());
-        $column = Request::post('column', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->object;
+        $order = $this->request->post('order', 'array', []);
+        $column = $this->request->post('column', 'string', false);
 
-        if ($column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
         $columnObject = $object->getColumn($column);
 
-        if ($columnObject->getClass() !== 'Grid_Column_Action')
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 3');
+        if ($columnObject->getClass() !== 'Grid_Column_Action') {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 3');
+            return;
+        }
 
         if (!empty($order)) {
             $index = 0;
@@ -308,25 +410,33 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
                     $index++;
                 }
             }
-            if ($index > 0)
+            if ($index > 0) {
                 $columnObject->sortActions();
+            }
         }
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 
     public function rendererLoadAction()
     {
-        $object = $this->_object;
-        $column = Request::post('column', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->object;
+        $column = $this->request->post('column', 'string', false);
         $data = [];
 
-        if ($column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
         $columnObject = $object->getColumn($column);
         $renderer = $columnObject->renderer;
@@ -336,62 +446,70 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
                 'type' => 'adapter',
                 'adapter' => $renderer
             ];
-        } elseif ($renderer instanceof Ext_Helper_Grid_Column_Renderer) {
+        } elseif ($renderer instanceof \Ext_Helper_Grid_Column_Renderer) {
             $data = [
                 'type' => $renderer->getType(),
             ];
             switch ($renderer->getType()) {
-                case Ext_Helper_Grid_Column_Renderer::TYPE_DICTIONARY:
+                case \Ext_Helper_Grid_Column_Renderer::TYPE_DICTIONARY:
                     $data['dictionary'] = $renderer->getValue();
                     break;
-                case Ext_Helper_Grid_Column_Renderer::TYPE_ADAPTER:
+                case \Ext_Helper_Grid_Column_Renderer::TYPE_ADAPTER:
                     $data['adapter'] = $renderer->getValue();
                     break;
-                case Ext_Helper_Grid_Column_Renderer::TYPE_JSCALL:
+                case \Ext_Helper_Grid_Column_Renderer::TYPE_JSCALL:
                     $data['call'] = $renderer->getValue();
                     break;
-                case Ext_Helper_Grid_Column_Renderer::TYPE_JSCODE:
+                case \Ext_Helper_Grid_Column_Renderer::TYPE_JSCODE:
                     $data['code'] = $renderer->getValue();
                     break;
             }
         }
 
-        Response::jsonSuccess($data);
+        $this->response->success($data);
     }
 
     public function rendererSaveAction()
     {
-        $object = $this->_object;
-        $column = Request::post('column', 'string', false);
+        if (!$this->checkLoaded() || !$this->checkObject()) {
+            return;
+        }
+        $object = $this->object;
+        $column = $this->request->post('column', 'string', false);
 
-        if ($column === false)
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 1');
+        if ($column === false) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 1');
+            return;
+        }
 
-        if ($object->getClass() !== 'Grid' || !$object->columnExists($column))
-            Response::jsonError($this->_lang->WRONG_REQUEST . ' code 2');
+        if ($object->getClass() !== 'Grid' || !$object->columnExists($column)) {
+            $this->response->error($this->lang->get('WRONG_REQUEST') . ' code 2');
+            return;
+        }
 
-        $rendererHelper = new Ext_Helper_Grid_Column_Renderer();
+        $rendererHelper = new \Ext_Helper_Grid_Column_Renderer();
 
-        $type = Request::post('type', 'string', false);
+        $type = $this->request->post('type', 'string', false);
 
         if (!in_array($type, $rendererHelper->getTypes(), true)) {
-            Response::jsonError($this->_lang->get('FILL_FORM'), array('type' => $this->_lang->get('INVALID_VALUE')));
+            $this->response->error($this->lang->get('FILL_FORM'), ['type' => $this->lang->get('INVALID_VALUE')]);
+            return;
         }
 
         $rendererHelper->setType($type);
 
         switch ($type) {
-            case Ext_Helper_Grid_Column_Renderer::TYPE_DICTIONARY:
-                $rendererHelper->setValue(Request::post('dictionary', Filter::FILTER_RAW, ''));
+            case \Ext_Helper_Grid_Column_Renderer::TYPE_DICTIONARY:
+                $rendererHelper->setValue($this->request->post('dictionary', Filter::FILTER_RAW, ''));
                 break;
-            case Ext_Helper_Grid_Column_Renderer::TYPE_ADAPTER:
-                $rendererHelper->setValue(Request::post('adapter', Filter::FILTER_RAW, ''));
+            case \Ext_Helper_Grid_Column_Renderer::TYPE_ADAPTER:
+                $rendererHelper->setValue($this->request->post('adapter', Filter::FILTER_RAW, ''));
                 break;
-            case Ext_Helper_Grid_Column_Renderer::TYPE_JSCALL:
-                $rendererHelper->setValue(Request::post('call', Filter::FILTER_RAW, ''));
+            case \Ext_Helper_Grid_Column_Renderer::TYPE_JSCALL:
+                $rendererHelper->setValue($this->request->post('call', Filter::FILTER_RAW, ''));
                 break;
-            case Ext_Helper_Grid_Column_Renderer::TYPE_JSCODE:
-                $rendererHelper->setValue(Request::post('code', Filter::FILTER_RAW, ''));
+            case \Ext_Helper_Grid_Column_Renderer::TYPE_JSCODE:
+                $rendererHelper->setValue($this->request->post('code', Filter::FILTER_RAW, ''));
                 break;
 
         }
@@ -399,7 +517,7 @@ class Backend_Designer_Sub_Gridcolumn extends Backend_Designer_Sub
         $columnObject = $object->getColumn($column);
         $columnObject->renderer = $rendererHelper;
 
-        $this->_storeProject();
-        Response::jsonSuccess();
+        $this->storeProject();
+        $this->response->success();
     }
 }

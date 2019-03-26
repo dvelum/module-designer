@@ -86,7 +86,7 @@ class Properties extends Module
         $value = $this->request->post('value', 'raw', false);
 
         if (!$object->isValidProperty($property)) {
-            $this->response->error();
+            $this->response->error('');
             return;
         }
 

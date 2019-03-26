@@ -37,17 +37,18 @@ class Form extends Module
      */
     protected $object;
 
-    protected function checkObject()
+    protected function checkObject() : bool
     {
         $name = $this->request->post('object', 'string', '');
         $project = $this->getProject();
         if (!strlen($name) || !$project->objectExists($name) || $project->getObject($name)->getClass() !== 'Form'){
             $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return;
+            return false;
         }
 
         $this->project = $project;
         $this->object = $project->getObject($name);
+        return true;
     }
 
     /**
