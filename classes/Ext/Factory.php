@@ -29,7 +29,7 @@ class Ext_Factory
 	 * @return Ext_Object
 	 */
 	static public function object($class , array $config = [])
-	{	
+	{
 		$class = ucfirst($class);
 		
 		if(strpos($class, 'Ext_')===0)

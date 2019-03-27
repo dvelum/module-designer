@@ -21,6 +21,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
+use Dvelum\Designer\Factory;
 use Dvelum\Orm\Model;
 use Dvelum\File;
 use Dvelum\App\Session\User;
@@ -119,7 +120,7 @@ class Viewframe extends Module
             array('tpl' => $templates['urldelimiter'], 'value' => $this->appConfig->get('urlDelimiter')),
         );
 
-        $includes = \Designer_Factory::getProjectIncludes($key, $project, true, $replaces, true);
+        $includes = Factory::getProjectIncludes($key, $project, true, $replaces, true);
 
         if (!empty($includes)) {
             foreach ($includes as $file) {
