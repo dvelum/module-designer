@@ -17,11 +17,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Dvelum\App\Backend\Designer\Module;
+namespace Dvelum\App\Backend\Designer\Module\Grid;
 
 use Dvelum\App\Backend\Designer\Module;
 
-class Gridfilter extends Module
+class Filter extends Module
 {
     /**
      * @var \Designer_Project

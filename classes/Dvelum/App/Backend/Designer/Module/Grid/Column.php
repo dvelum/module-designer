@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Dvelum\App\Backend\Designer\Module;
+namespace Dvelum\App\Backend\Designer\Module\Grid;
 
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
@@ -25,7 +25,11 @@ use Dvelum\File;
 use Dvelum\Filter;
 use Dvelum\Utils;
 
-class Gridcolumn extends Module
+/**
+ * Class Column
+ * @package Dvelum\App\Backend\Designer\Module\Grid
+ */
+class Column extends Module
 {
     /**
      * @var \Designer_Project

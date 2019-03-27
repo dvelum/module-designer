@@ -125,8 +125,8 @@ Ext.define('designer.grid.column.ActionsWindow',{
 
 		this.propertiesPanel =  Ext.create('designer.properties.GridColumn',{
 			autoLoadData:false,
-			controllerUrl: app.createUrl([designer.controllerUrl ,'gridcolumnactions','']),
-			eventsControllerUrl:app.createUrl([designer.controllerUrl ,'gridcolumnactionevents','']),
+			controllerUrl: app.createUrl([designer.controllerUrl ,'GridColumnAction','']),
+			eventsControllerUrl:app.createUrl([designer.controllerUrl ,'GridColumnActionEvents','']),
 			extraParams:{
 				column:this.columnId
 			},

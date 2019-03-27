@@ -51,7 +51,6 @@ class Controller extends Backend\Controller
          * External
          */
         '/resources/dvelum-module-designer/js/lib/CodeMirror/lib/codemirror.js',
-
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/hint/show-hint.js',
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/hint/javascript-hint.js',
         '/resources/dvelum-module-designer/js/lib/CodeMirror/addon/dialog/dialog.js',
@@ -81,11 +80,7 @@ class Controller extends Backend\Controller
         '/resources/dvelum-module-designer/js/designer/defaultsWindow.js',
         '/resources/dvelum-module-designer/js/designer/typedDefaultsWindow.js',
         '/resources/dvelum-module-designer/js/designer/paramsWindow.js',
-
-        //'/resources/dvelum-module-designer/js/designer/connections.js',
-
         '/resources/dvelum-module-designer/js/designer/instanceWindow.js',
-
         '/resources/dvelum-module-designer/js/designer/configWindow.js',
         '/resources/dvelum-module-designer/js/designer/configWindow.js',
         '/resources/dvelum-module-designer/js/designer/codeEditor.js',
@@ -102,7 +97,6 @@ class Controller extends Backend\Controller
         '/resources/dvelum-module-designer/js/designer/grid/column/ActionsWindow.js',
         '/resources/dvelum-module-designer/js/designer/grid/column/RendererWindow.js',
         '/resources/dvelum-module-designer/js/designer/grid/filters.js',
-
         '/resources/dvelum-module-designer/js/designer/properties.js',
         '/resources/dvelum-module-designer/js/designer/properties/grid.js',
         '/resources/dvelum-module-designer/js/designer/properties/column.js',
@@ -120,13 +114,10 @@ class Controller extends Backend\Controller
         '/resources/dvelum-module-designer/js/designer/properties/search.js',
         '/resources/dvelum-module-designer/js/designer/properties/mediaItem.js',
         '/resources/dvelum-module-designer/js/designer/properties/jsObject.js',
-
         '/resources/dvelum-module-designer/js/designer/model.js',
         '/resources/dvelum-module-designer/js/designer/store.js',
         '/resources/dvelum-module-designer/js/designer/relatedProjectItemsWindow.js',
-
         '/js/app/system/FilesystemWindow.js',
-
         '/js/app/system/orm/connections.js',
         '/resources/dvelum-module-designer/js/run.js',
 
@@ -144,8 +135,8 @@ class Controller extends Backend\Controller
         $this->designerConfig = Config::storage()->get('designer.php');
 
         $moduleManager = Manager::factory($this->appConfig);
-        $moduleInfo = $moduleManager->getModuleConfig('dvelum','module-designer');
-        if(!empty($moduleInfo)){
+        $moduleInfo = $moduleManager->getModuleConfig('dvelum', 'module-designer');
+        if (!empty($moduleInfo)) {
             $this->version = $moduleInfo['version'];
         }
     }
@@ -180,14 +171,12 @@ class Controller extends Backend\Controller
 
 
         Model::factory('Medialib')->includeScripts();
-        $this->resource->addJs('/resources/dvelum-module-designer/js/designer/lang/' . $this->designerConfig->get('lang') . '.js',
-            1);
+        $this->resource->addJs('/resources/dvelum-module-designer/js/designer/lang/' . $this->designerConfig->get('lang') . '.js',1);
         $this->resource->addCss('/resources/dvelum-module-designer/css/style.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/lib/codemirror.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/dialog/dialog.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/hint/show-hint.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/theme/eclipse.css');
-
 
         $dbConfigs = [];
         foreach ($this->appConfig->get('db_configs') as $k => $v) {
@@ -199,10 +188,10 @@ class Controller extends Backend\Controller
 
         $componentTemplates = Config::storage()->get('designer_templates.php')->__toArray();
         $this->resource->addInlineJs('
-		      var dbConfigsList = ' . json_encode($dbConfigs) . ';    
-		      var componentTemplates = ' . json_encode(array_values($componentTemplates)) . ';  
-		      var designerVersion = "'.$this->version.'";
-		');
+              var dbConfigsList = ' . json_encode($dbConfigs) . ';    
+              var componentTemplates = ' . json_encode(array_values($componentTemplates)) . ';  
+              var designerVersion = "' . $this->version . '";
+        ');
 
         $count = 4;
 
@@ -219,7 +208,6 @@ class Controller extends Backend\Controller
                 $count++;
             }
         }
-
     }
 
     /**
@@ -229,12 +217,25 @@ class Controller extends Backend\Controller
     {
         $subController = $this->request->getPart(3);
         $subAction = $this->request->getPart(4);
+
         if ($subController === false || !strlen($subController) || $subAction === false || !strlen($subAction)) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
             return;
         }
 
-        $subController = '\\Dvelum\\App\\Backend\\Designer\\Module\\' . ucfirst(Filter::filterValue('pagecode', $subController));
+        $routes = [];
+        $routesData = Config::storage()->get('designer_routes.php');
+        foreach ($routesData as $k => $v) {
+            $routes[strtolower($k)] = $v;
+        }
+
+        $subControllerPath = Filter::filterValue('pagecode', $subController);
+        if (isset($routes[$subControllerPath])) {
+            $subController = $routes[$subControllerPath];
+        } else {
+            $subController = '\\Dvelum\\App\\Backend\\Designer\\Module\\' . ucfirst(Filter::filterValue('pagecode', $subController));
+        }
+
         $subAction = Filter::filterValue('pagecode', $subAction) . 'Action';
 
         if (!class_exists($subController) || !method_exists($subController, $subAction)) {
