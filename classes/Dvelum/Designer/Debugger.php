@@ -1,45 +1,53 @@
 <?php
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+declare(strict_types=1);
 
-/*
- * DVelum project http://code.google.com/p/dvelum/ , http://dvelum.net
- * Copyright (C) 2011-2013  Kirill A Egorov
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+namespace Dvelum\Designer;
 
-class Designer_Debugger
+use Dvelum\Tree\Tree;
+use \Exception;
+/**
+ * Class Debugger
+ * @package Dvelum\Designer
+ */
+class Debugger
 {
     /**
-     * @var Designer_Project
+     * @var Project
      */
     protected $_project;
 
-    public function __construct(Designer_Project $project)
+    public function __construct(Project $project)
     {
-        $this->_project = $project;
+        $this->project = $project;
     }
 
     /**
      * @param string $objectName
      * @throws Exception
-     * @return Ext_Object
+     * @return \Ext_Object
      */
     protected function _getObject($objectName)
     {
-        if (!$this->_project->objectExists($objectName))
+        if (!$this->project->objectExists($objectName))
             throw new Exception('Designer_Debugger::_getObject nonexistent object ' . $objectName);
-        return $this->_project->getObject($objectName);
+        return $this->project->getObject($objectName);
     }
 
     /**
@@ -47,7 +55,7 @@ class Designer_Debugger
      */
     public function getTree()
     {
-        return $this->_project->getTree();
+        return $this->project->getTree();
     }
 
     /**
@@ -58,7 +66,7 @@ class Designer_Debugger
     public function getObjectProperties($objectName, $exceptEmpty = true)
     {
         $o = $this->_getObject($objectName);
-        if ($o instanceof Ext_Object) {
+        if ($o instanceof \Ext_Object) {
             return $o->getConfig()->__toArray($exceptEmpty);
         } else {
             return array();
@@ -72,7 +80,7 @@ class Designer_Debugger
     public function getObjectEvents($objectName)
     {
         $object = $this->_getObject($objectName);
-        $eventManager = $this->_project->getEventManager();
+        $eventManager = $this->project->getEventManager();
         $objectEvents = $eventManager->getObjectEvents($objectName);
         $data = array();
         if (!empty($objectEvents)) {
@@ -108,7 +116,7 @@ class Designer_Debugger
     {
         $pObject = $this->_getObject($objectName);
 
-        $o = new ReflectionObject($pObject);
+        $o = new \ReflectionObject($pObject);
         $properties = $o->getProperties();
         $data = array();
 
@@ -139,7 +147,7 @@ class Designer_Debugger
     {
         $pObject = $this->_getObject($objectName);
 
-        $o = new ReflectionObject($pObject);
+        $o = new \ReflectionObject($pObject);
         $methods = $o->getMethods();
 
         $data = array();
@@ -218,9 +226,9 @@ class Designer_Debugger
      */
     public function isExtendedObject($objectName)
     {
-        $o = $this->_project->getObject($objectName);
-        if ($o instanceof Ext_Object) {
-            return $this->_project->getObject($objectName)->isExtendedComponent();
+        $o = $this->project->getObject($objectName);
+        if ($o instanceof \Ext_Object) {
+            return $this->project->getObject($objectName)->isExtendedComponent();
         }
         return false;
     }
@@ -232,6 +240,6 @@ class Designer_Debugger
      */
     public function getObjectLocalMethods($objectName)
     {
-        return $this->_project->getMethodManager()->getObjectMethods($objectName);
+        return $this->project->getMethodManager()->getObjectMethods($objectName);
     }
 }

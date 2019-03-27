@@ -2,6 +2,7 @@
 namespace Dvelum\App\Backend\Designer;
 use Dvelum\Config;
 use Dvelum\Designer\Project;
+use Dvelum\Designer\Storage;
 use Dvelum\Lang;
 use Dvelum\Request;
 use Dvelum\Response;
@@ -68,7 +69,7 @@ abstract class Module
 
         $this->designerConfig = Config::storage()->get('designer.php');
         $this->session = \Store_Session::getInstance('Designer');
-        $this->storage = \Designer_Storage::getInstance($this->designerConfig->get('storage'), $this->designerConfig);
+        $this->storage = Storage::factory($this->designerConfig->get('storage'), $this->designerConfig);
 
         $this->page = \Page::getInstance();
         $this->response = \Dvelum\Response::factory();
