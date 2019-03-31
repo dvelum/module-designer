@@ -411,7 +411,7 @@ class File extends AbstractAdapter
         foreach ($data as $id => $v) {
             $cfg = require $this->exportPath . $v['data'];
 
-            if ($cfg['class'] == 'Designer_Project_Container') {
+            if ($cfg['class'] == 'Designer_Project_Container' || $cfg['class'] == 'Dvelum\\Designer\\Project\\Container') {
                 $o = new Project\Container($id);
             } else {
                 //$o = new $v['class']($v['name']);
