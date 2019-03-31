@@ -119,7 +119,7 @@ class Factory
                     /*if($project->getObject($name)->getConfig()->defineOnly)
                         continue;
                     */
-                    $initCode.= \Ext_Code::appendRunNamespace($name).' = Ext.create("'.Ext_Code::appendNamespace($name).'",{});';
+                    $initCode.= \Ext_Code::appendRunNamespace($name).' = Ext.create("'.\Ext_Code::appendNamespace($name).'",{});';
                 }
                 $initCode.='
                     app.content.add('.\Ext_Code::appendRunNamespace($name).');
