@@ -36,10 +36,14 @@ class Events extends Column\Events
      */
     protected function checkInput(): bool
     {
+        if(!parent::checkInput()){
+            return false;
+        }
+
         if(!$this->checkAction()){
             return false;
         }
-        return parent::checkInput();
+        return true;
     }
 
     protected  function checkAction()
