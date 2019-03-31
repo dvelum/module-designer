@@ -1,37 +1,29 @@
 <?php
-/**
- *  DVelum project https://github.com/dvelum/dvelum
- *  Copyright (C) 2011-2019  Kirill Yegorov
- *  
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-declare(strict_types=1);
-
-namespace Dvelum\Designer\Storage\Adapter;
-
-use Dvelum\Designer\Project;
-use Dvelum\Config\ConfigInterface;
-use Dvelum\Utils;
-use \Exception as Exception;
+/*
+* DVelum project http://code.google.com/p/dvelum/ , http://dvelum.net
+* Copyright (C) 2011-2013  Kirill A Egorov
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /**
  * File adapter for Designer_Storage
  * @author Kirill A Egorov 2012
  */
-class File extends AbstractAdapter
+class Designer_Storage_Adapter_File extends Designer_Storage_Adapter_Abstract
 {
-    protected $configPath = '';
+    protected $_configPath = '';
     protected $dirPostfix = '.files';
 
     protected $exportPath;
@@ -42,42 +34,37 @@ class File extends AbstractAdapter
     }
 
     /**
-     * @param ConfigInterface $config , optional
+     * @param array $config , optional
      */
-    public function __construct(?ConfigInterface $config = null)
+    public function __construct($config = false)
     {
         parent::__construct($config);
-        
-        if (!empty($config))
+        if ($config)
             $this->setConfigsPath($config->get('configs'));
     }
 
     /**
-     * @param string $id
-     * @return Project
-     * @throws Exception
+     * (non-PHPdoc)
+     * @see Designer_Storage_Adapter_Abstract::load()
      */
-    public function load($id) : Project
+    public function load($id)
     {
         if (!is_file($id))
             throw new Exception('Invalid file path' . $id);
-        
-        return $this->unpack(file_get_contents($id));
+        return $this->_unpack(file_get_contents($id));
     }
 
     /**
-     * @param string $id
-     * @param Project $obj
-     * @param bool $export
-     * @return bool
+     * (non-PHPdoc)
+     * @see Designer_Storage_Adapter_Abstract::save()
      */
-    public function save($id, Project $obj, bool $export = false): bool
+    public function save($id, Designer_Project $obj, $export = false)
     {
         $obj->resortItems();
-        $result = @file_put_contents($id, $this->pack($obj));
+        $result = @file_put_contents($id, $this->_pack($obj));
 
         if ($result == false) {
-            $this->errors[] = 'write: ' . $id;
+            $this->_errors[] = 'write: ' . $id;
             return false;
         }
 
@@ -88,12 +75,12 @@ class File extends AbstractAdapter
     }
 
     /**
-     * @param string $id
-     * @return bool
+     * (non-PHPdoc)
+     * @see Designer_Storage_Adapter_Abstract::delete()
      */
-    public function delete($id) : bool
+    public function delete($id)
     {
-        $id = $this->configPath . $id;
+        $id = $this->_configPath . $id;
         return unlink($id);
     }
 
@@ -103,18 +90,17 @@ class File extends AbstractAdapter
      */
     public function setConfigsPath($path)
     {
-        $this->configPath = $path;
+        $this->_configPath = $path;
     }
 
     /**
      * Export project data for VCS
      * @param $file - project file path
-     * @param Project $project
-     * @return bool
+     * @param Designer_Project $project
      */
-    protected function export($file, Project $project) :bool
+    protected function export($file, Designer_Project $project)
     {
-        $this->errors = [];
+        $this->_errors = array();
 
         $this->exportPath = $this->getContentDir($file);
 
@@ -123,7 +109,7 @@ class File extends AbstractAdapter
                 return false;
             }
         } else {
-            \Dvelum\File::rmdirRecursive($this->exportPath);
+            File::rmdirRecursive($this->exportPath);
         }
 
         /*
@@ -135,18 +121,18 @@ class File extends AbstractAdapter
         );
 
         if(!Utils::exportArray($projectPath.'dump.php' , $dump)) {
-            $this->errors[] = 'write: '.$projectPath.'config.php';
+            $this->_errors[] = 'write: '.$projectPath.'config.php';
             return false;
         }
         */
         // Export ActionJs
         if (@file_put_contents($this->exportPath . 'ActionJS.js', $project->getActionJs()) === false) {
-            $this->errors[] = 'write: ' . $this->exportPath . 'ActionJS.js';
+            $this->_errors[] = 'write: ' . $this->exportPath . 'ActionJS.js';
             return false;
         }
         // Export Project config
         if (!Utils::exportArray($this->exportPath . '__config.php', $project->getConfig())) {
-            $this->errors[] = 'write: ' . $this->exportPath . '__config.php';
+            $this->_errors[] = 'write: ' . $this->exportPath . '__config.php';
             return false;
         }
         // Export Project events
@@ -156,7 +142,7 @@ class File extends AbstractAdapter
             return false;
 
         if (!Utils::exportArray($this->exportPath . '__events.php', $events)) {
-            $this->errors[] = 'write: ' . $this->exportPath . '__events.php';
+            $this->_errors[] = 'write: ' . $this->exportPath . '__events.php';
             return false;
         }
         // Export Project methods
@@ -166,26 +152,24 @@ class File extends AbstractAdapter
             return false;
 
         if (!Utils::exportArray($this->exportPath . '__methods.php', $methods)) {
-            $this->errors[] = 'write: ' . $this->exportPath . '__methods.php';
+            $this->_errors[] = 'write: ' . $this->exportPath . '__methods.php';
             return false;
         }
 
         // Export Project Tree
-        try{
-            $tree = $this->parseTree($project);
-        }catch (Exception $e){
+        $tree = $this->parseTree($project);
+        if ($tree === false) {
             return false;
         }
 
-
         if (!Utils::exportArray($this->exportPath . '__tree.php', $tree)) {
-            $this->errors[] = 'write: ' . $this->exportPath . '__tree.php';
+            $this->_errors[] = 'write: ' . $this->exportPath . '__tree.php';
             return false;
         }
 
         $instances = $this->exportInstances($project);
         if (!Utils::exportArray($this->exportPath . '__instances.php', $instances)) {
-            $this->errors[] = 'write: ' . $this->exportPath . '__instances.php';
+            $this->_errors[] = 'write: ' . $this->exportPath . '__instances.php';
             return false;
         }
 
@@ -194,11 +178,9 @@ class File extends AbstractAdapter
 
     /**
      * Create project items array
-     * @param Project $project
-     * @return array
-     * @throws Exception
+     * @param Designer_Project $project
      */
-    protected function parseTree(Project $project) : ?array
+    protected function parseTree(Designer_Project $project)
     {
         $result = [];
         $items = $project->getTree()->getItems();
@@ -207,7 +189,7 @@ class File extends AbstractAdapter
             $exportedObject = $this->exportObject($v['id'], $v['data']);
 
             if ($exportedObject === false) {
-               throw new \Exception('Cannot export '.$v['id']);
+                return false;
             }
 
             $v['data'] = $exportedObject;
@@ -233,16 +215,16 @@ class File extends AbstractAdapter
             'class' => get_class($object)
         ];
 
-        if ($object instanceof \Ext_Object) {
+        if ($object instanceof Ext_Object) {
             $config['extClass'] = $object->getClass();
             $config['name'] = $object->getName();
             $config['state'] = $object->getState();
-        } elseif ($object instanceof \Ext_Exportable) {
+        } elseif ($object instanceof Ext_Exportable) {
             $config['state'] = $object->getState();
         }
 
         if (!Utils::exportArray($objectFile, $config)) {
-            $this->errors[] = 'write: ' . $objectFile;
+            $this->_errors[] = 'write: ' . $objectFile;
             return false;
         }
 
@@ -252,7 +234,7 @@ class File extends AbstractAdapter
     /**
      * Export project events
      */
-    protected function exportEvents(Project $project)
+    protected function exportEvents(Designer_Project $project)
     {
         $eventManager = $project->getEventManager();
         $list = $eventManager->getEvents();
@@ -267,7 +249,7 @@ class File extends AbstractAdapter
                 if (!empty($data['code'])) {
                     $eventFile = $this->exportPath . $object . '.events.' . $name . '.js';
                     if (!@file_put_contents($eventFile, $data['code'])) {
-                        $this->errors[] = 'write: ' . $eventFile;
+                        $this->_errors[] = 'write: ' . $eventFile;
                         return false;
                     }
                     $data['code'] = $object . '.events.' . $name . '.js';
@@ -277,7 +259,7 @@ class File extends AbstractAdapter
             }
             $listFile = $this->exportPath . $object . '.events.php';
             if (!Utils::exportArray($listFile, $events)) {
-                $this->errors[] = 'write: ' . $eventFile;
+                $this->_errors[] = 'write: ' . $eventFile;
                 return false;
             }
             $eventsIndex[$object] = $object . '.events.php';
@@ -288,7 +270,7 @@ class File extends AbstractAdapter
     /**
      * Export project events
      */
-    protected function exportMethods(Project $project)
+    protected function exportMethods(Designer_Project $project)
     {
         $methodManager = $project->getMethodManager();
         $list = $methodManager->getMethods();
@@ -300,8 +282,7 @@ class File extends AbstractAdapter
             }
             $methodList = [];
             foreach ($methods as $name => $item) {
-
-                if (!$item instanceof Project\Methods\Item) {
+                if (!$item instanceof Designer_Project_Methods_Item) {
                     continue;
                 }
 
@@ -315,7 +296,7 @@ class File extends AbstractAdapter
                 if (!empty($data['code'])) {
                     $eventFile = $this->exportPath . $object . '.methods.' . $name . '.js';
                     if (!@file_put_contents($eventFile, $data['code'])) {
-                        $this->errors[] = 'write: ' . $eventFile;
+                        $this->_errors[] = 'write: ' . $eventFile;
                         return false;
                     }
                     $data['code'] = $object . '.methods.' . $name . '.js';
@@ -326,7 +307,7 @@ class File extends AbstractAdapter
             }
             $listFile = $this->exportPath . $object . '.methods.php';
             if (!Utils::exportArray($listFile, $methodList)) {
-                $this->errors[] = 'write: ' . $eventFile;
+                $this->_errors[] = 'write: ' . $eventFile;
                 return false;
             }
             $methodIndex[$object] = $object . '.methods.php';
@@ -336,20 +317,20 @@ class File extends AbstractAdapter
 
     /**
      * Get object instances list
-     * @param Project $project
+     * @param Designer_Project $project
      * @return array
      */
-    public function exportInstances(Project $project)
+    public function exportInstances(Designer_Project $project)
     {
         $instances = [];
         $items = $project->getTree()->getItems();
 
         foreach ($items as $item) {
-            if (!$item['data'] instanceof \Ext_Object_Instance) {
+            if (!$item['data'] instanceof Ext_Object_Instance) {
                 continue;
             }
             /**
-             * @var \Ext_Object_instance $item
+             * @var Ext_Object_instance $item
              */
             $instances[] = ['id' => $item['id'], 'name' => $item['data']->getName(), 'object' => $item['data']->getObject()->getName()];
         }
@@ -359,10 +340,9 @@ class File extends AbstractAdapter
     /**
      * Import project from content dir
      * @param string $file
-     * @return Project | null
-     * @throws Exception
+     * @return Designer_Project | false
      */
-    public function import($file) : ?Project
+    public function import($file)
     {
         $this->exportPath = $this->getContentDir($file);
         $baseFiles = array('__config.php', '__tree.php', '__events.php', '__methods.php', '__instances.php');
@@ -370,12 +350,12 @@ class File extends AbstractAdapter
         // check base files
         foreach ($baseFiles as $file) {
             if (!file_exists($this->exportPath . $file)) {
-                return null;
+                return false;
             }
         }
 
         $config = require $this->exportPath . '__config.php';
-        $project = new Project();
+        $project = new Designer_Project();
         $project->setConfig($config);
 
         $project->setActionJs(@file_get_contents($this->exportPath . 'ActionJS.js'));
@@ -397,34 +377,35 @@ class File extends AbstractAdapter
 
     /**
      * Restore project Tree from config
-     * @param Project $project
+     * @param Designer_Project $project
      * @param $data
      */
-    protected function importTree(Project $project, $data)
+    protected function importTree(Designer_Project $project, $data)
     {
         $tree = $project->getTree();
         foreach ($data as $id => $v) {
             $cfg = require $this->exportPath . $v['data'];
 
             if ($cfg['class'] == 'Designer_Project_Container') {
-                $o = new Project\Container($id);
+                $o = new Designer_Project_Container($id);
             } else {
                 //$o = new $v['class']($v['name']);
-                $o = \Ext_Factory::object($cfg['extClass']);
+                $o = Ext_Factory::object($cfg['extClass']);
                 $o->setState($cfg['state']);
                 $o->setName($cfg['name']);
             }
             $tree->addItem($v['id'], $v['parent'], $o, $v['order']);
         }
+
         $tree->sortItems();
     }
 
     /**
      * Restore project methods from config
-     * @param Project $project
+     * @param Designer_Project $project
      * @param array $methods
      */
-    protected function importMethods(Project $project, array $methods)
+    protected function importMethods(Designer_Project $project, array $methods)
     {
         $methodManager = $project->getMethodManager();
         foreach ($methods as $object => $configFile) {
@@ -444,10 +425,10 @@ class File extends AbstractAdapter
 
     /**
      * Restore project events from config
-     * @param Project $project
+     * @param Designer_Project $project
      * @param array $events
      */
-    protected function importEvents(Project $project, array $events)
+    protected function importEvents(Designer_Project $project, array $events)
     {
         $eventManager = $project->getEventManager();
         foreach ($events as $object => $configFile) {
@@ -464,11 +445,11 @@ class File extends AbstractAdapter
 
     /**
      * Restore object instances
-     * @param Project $project
+     * @param Designer_Project $project
      * @param array $instances
      * @throw Exception
      */
-    protected function importInstances(Project $project, array $instances)
+    protected function importInstances(Designer_Project $project, array $instances)
     {
         foreach ($instances as $v) {
             if (!$project->objectExists($v['id'])) {
@@ -478,7 +459,7 @@ class File extends AbstractAdapter
                 throw new Exception('Broken component tree. Undefined component object ' . $v['object'] . ' as instance ' . $v['id']);
             }
             /**
-             * @var \Ext_Object_Instance $src
+             * @var Ext_Object_Instance $src
              */
             $src = $project->getObject($v['id']);
 

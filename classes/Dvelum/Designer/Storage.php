@@ -20,33 +20,34 @@ declare(strict_types=1);
 
 namespace Dvelum\Designer;
 
+use Dvelum\Cache\CacheInterface;
 use Dvelum\Config\ConfigInterface;
 use Dvelum\Designer\Storage\Adapter\AbstractAdapter;
 
 class Storage
 {
     /**
-     * @property \Dvelum\Cache\CacheInterface|bool
+     * @property CacheInterface|bool
      */
     protected static $cache = false;
     protected static $instances = [];
 
     /**
      * Storage adapter
-     * @property Designer_Storage_Adapter_Abstract
+     * @property AbstractAdapter
      */
-    protected $_adapter = null;
+    protected $adapter = null;
     /**
      * Adapter Class name
      * @property string
      */
-    protected $_adapterClass = null;
+    protected $adapterClass = null;
 
     /**
-     * Set chache core
-     * @param Cache_Interface $manager
+     * Set cache core
+     * @param CacheInterface $manager
      */
-    static public function setCache(Cache_Interface $manager)
+    static public function setCache(CacheInterface $manager)
     {
         self::$cache = $manager;
     }
@@ -86,8 +87,8 @@ class Storage
     protected function __clone(){}
 
     /**
-     * Get Adabpter object
-     * @return Designer_Storage_Adapter_Abstract
+     * Get Adapter object
+     * @return AbstractAdapter
      */
     public function getAdapter()
     {
@@ -144,11 +145,11 @@ class Storage
     /**
      * Save Designer_Project
      * @param string $id
-     * @param Designer_Project $obj
+     * @param Project $obj
      * @param boolean $export
      * @return boolean
      */
-    public function save($id, Designer_Project $obj, $export = false)
+    public function save($id, Project $obj, $export = false)
     {
         if (!$this->adapter->save($id, $obj, $export))
             return false;

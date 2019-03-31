@@ -1,6 +1,6 @@
 <?php return [
-    'Dvelum_Designer' => [
-        'id' => 'Dvelum_Designer',
+    'Designer' => [
+        'id' => 'Designer',
         'dev' => true,
         'active' => true,
         'class' => '\\Dvelum\\App\\Backend\\Designer\\Controller',

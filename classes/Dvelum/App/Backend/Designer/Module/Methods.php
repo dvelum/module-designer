@@ -21,6 +21,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Filter;
+use Dvelum\Designer\Project;
 
 class Methods extends Module
 {
@@ -45,11 +46,12 @@ class Methods extends Module
 
     /**
      * Conver method object into array
-     * @param \Designer_Project_Methods_Item $method
+     * @param Project\Methods\Item $method
      * @param string $objectName
      * @return array
+     * @throws \Exception
      */
-    protected function methodToArray(\Designer_Project_Methods_Item $method, string $objectName) : array
+    protected function methodToArray(Project\Methods\Item $method, string $objectName) : array
     {
         $object = $this->getProject()->getObject($objectName);
         $code = $method->getCode();

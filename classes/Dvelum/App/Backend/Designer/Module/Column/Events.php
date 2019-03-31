@@ -19,6 +19,7 @@
 namespace Dvelum\App\Backend\Designer\Module\Column;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Designer\Project;
 
 /**
  * Class Events
@@ -27,7 +28,7 @@ use Dvelum\App\Backend\Designer\Module;
 abstract class Events extends Module
 {
     /**
-     * @var \Designer_Project
+     * @var Project
      */
     protected $project;
     /**

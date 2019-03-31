@@ -37,7 +37,7 @@ class Orm extends Module
             foreach ($objects as $name) {
                 $data[] = [
                     'name' => $name,
-                    'title' => Orm\Record\Config::factory($name)->getTitle()
+                    'title' => Record\Config::factory($name)->getTitle()
                 ];
             }
         }

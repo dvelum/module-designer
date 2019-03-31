@@ -28,7 +28,7 @@ class Actionjs extends Module
 	public function loadAction()
 	{
 		$project = $this->getProject();
-		$this->response->success($project->getActionJs());
+		$this->response->success(['code'=>$project->getActionJs()]);
 	}
 
 	/**

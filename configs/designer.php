@@ -20,5 +20,5 @@ return [
 	],
 	'vcs_support' => true,
 	'theme'=>'gray',
-	'application_theme' => 'gray'
+	'application_theme' => 'triton'
 ];

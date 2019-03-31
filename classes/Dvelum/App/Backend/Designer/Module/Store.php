@@ -20,11 +20,12 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Designer\Project;
 
 class Store extends Module
 {
     /**
-     * @var \Designer_Project
+     * @var Project
      */
     protected $project;
     /**
@@ -206,10 +207,10 @@ class Store extends Module
 
     /**
      * @param $store
-     * @param \Designer_Project $project
+     * @param Project $project
      * @return array
      */
-    protected function extractFields($store, \Designer_Project $project): array
+    protected function extractFields($store, Project $project): array
     {
         if (empty($store)) {
             return [];

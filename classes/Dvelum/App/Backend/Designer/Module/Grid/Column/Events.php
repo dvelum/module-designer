@@ -32,7 +32,12 @@ class Events extends Module\Column\Events
      */
     public function objectEventsAction()
     {
+        if(!$this->checkInput()){
+            return;
+        }
+
         $eObject = $this->getEventObject();
+
         $objectEvents = $this->project->getEventManager()->getObjectEvents($eObject);
 
         $events = $this->column->getConfig()->getEvents();
@@ -63,6 +68,11 @@ class Events extends Module\Column\Events
      */
     public function eventCodeAction()
     {
+        if(!$this->checkInput()){
+            return;
+        }
+
+
         $project = $this->getProject();
         $event = $this->getEvent();
 
@@ -84,6 +94,10 @@ class Events extends Module\Column\Events
      */
     protected function getEventObject()
     {
+        if(!$this->checkInput()){
+            return;
+        }
+
         return $this->object->getName() . '.column.' . $this->column->getName();
     }
 
@@ -92,6 +106,10 @@ class Events extends Module\Column\Events
      */
     public function saveEventAction()
     {
+        if(!$this->checkInput()){
+            return;
+        }
+
         $project = $this->getProject();
 
         $event = $this->getEvent();
@@ -114,6 +132,11 @@ class Events extends Module\Column\Events
      */
     public function removeEventAction()
     {
+        if(!$this->checkInput()){
+            return;
+        }
+
+
         $project = $this->getProject();
         $event = $this->getEvent();
         $eObject = $this->getEventObject();
