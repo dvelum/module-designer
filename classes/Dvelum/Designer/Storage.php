@@ -147,9 +147,9 @@ class Storage
      * @param string $id
      * @param Project $obj
      * @param boolean $export
-     * @return boolean
+     * @return bool
      */
-    public function save($id, Project $obj, $export = false)
+    public function save($id, Project $obj,  bool $export = false) : bool
     {
         if (!$this->adapter->save($id, $obj, $export))
             return false;

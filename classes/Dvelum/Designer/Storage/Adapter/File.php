@@ -22,6 +22,7 @@ namespace Dvelum\Designer\Storage\Adapter;
 
 use Dvelum\Designer\Project;
 use Dvelum\Config\ConfigInterface;
+use Dvelum\Tree\Item;
 use Dvelum\Utils;
 use \Exception as Exception;
 
@@ -204,6 +205,10 @@ class File extends AbstractAdapter
         $items = $project->getTree()->getItems();
         $items = Utils::sortByField($items, 'parent');
         foreach ($items as $v) {
+            /**
+             * @var Item $v
+             */
+            $v = $v->__toArray();
             $exportedObject = $this->exportObject($v['id'], $v['data']);
 
             if ($exportedObject === false) {

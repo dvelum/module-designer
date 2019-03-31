@@ -64,7 +64,7 @@ class Viewframe extends Module
             }
         }
 
-        Model::factory('Medialib')->includeScripts();
+       // Model::factory('Medialib')->includeScripts();
 
         $res->addJs('/js/app/system/SearchPanel.js');
         $res->addJs('/js/app/system/HistoryPanel.js', 0);
