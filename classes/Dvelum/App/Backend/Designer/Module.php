@@ -6,6 +6,8 @@ use Dvelum\Designer\Storage;
 use Dvelum\Lang;
 use Dvelum\Request;
 use Dvelum\Response;
+use Dvelum\Store\Factory;
+use Dvelum\Store\Session;
 
 abstract class Module
 {
@@ -23,7 +25,7 @@ abstract class Module
      */
     protected $designerConfig;
     /**
-     * @var \Store_Session
+     * @var Session
      */
     protected $session;
     /**
@@ -68,7 +70,7 @@ abstract class Module
         $this->db = $service->getModelSettings()->get('defaultDbManager')->getDbConnection('default');
 
         $this->designerConfig = Config::storage()->get('designer.php');
-        $this->session = \Store_Session::getInstance('Designer');
+        $this->session = Factory::get(Factory::SESSION, 'Designer');
         $this->storage = Storage::factory($this->designerConfig->get('storage'), $this->designerConfig);
 
         $this->page = \Page::getInstance();

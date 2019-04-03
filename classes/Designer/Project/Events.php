@@ -1,6 +1,6 @@
 <?php
 /*
- * DVelum project http://code.google.com/p/dvelum/ , http://dvelum.net
+ * DVelum project https://github.com/dvelum/dvelum , http://dvelum.net
 * Copyright (C) 2011-2013  Kirill A Egorov
 *
 * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 */
 /**
  * Event manager for Designer project 
- * @author Kirill Egorov 2012  DVelum project http://code.google.com/p/dvelum/ , http://dvelum.net
+ * @author Kirill Egorov 2012  DVelum project https://github.com/dvelum/dvelum , http://dvelum.net
  * @package Designer
  */
 class Designer_Project_Events

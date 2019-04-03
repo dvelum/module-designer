@@ -4,7 +4,7 @@ $res = \Dvelum\Resource::factory();
 $res->addJs('js/app/system/common.js' , -1);
 $token = '';
 if($this->useCSRFToken){
-    $csrf = new Security_Csrf();
+    $csrf = new \Dvelum\Security\Csrf();
     $token = $csrf->createToken();
 }
 
