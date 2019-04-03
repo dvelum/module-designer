@@ -18,7 +18,7 @@ return [
 		'adminpath' => '[%admp%]',
 		'urldelimiter' => '[%-%]'
 	],
-	'vcs_support' => false,
+	'vcs_support' => true,
 	'theme'=>'gray',
-	'application_theme' => 'gray'
+	'application_theme' => 'triton'
 ];

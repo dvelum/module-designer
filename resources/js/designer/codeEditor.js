@@ -184,7 +184,7 @@ Ext.define('designer.codeEditor',{
 					this.disable();
 					Ext.Msg.alert(appLang.MESSAGE,desLang.cantLoadActionJS +'.<br>'+response.msg);
 				}else{
-					this.codeMirror.setValue(response.data);
+					this.codeMirror.setValue(response.data.code);
 					this.syncEditor();
 					this.historyUndoState = this.codeMirror.historySize()['undo'];
 					this.onChange();

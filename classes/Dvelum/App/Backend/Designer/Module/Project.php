@@ -22,6 +22,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
 use Dvelum\File;
+use Dvelum\Designer;
 
 /**
  * Project controller
@@ -75,20 +76,20 @@ class Project extends Module
 
         try {
             if ($this->designerConfig->get('vcs_support')) {
-                $project = \Designer_Factory::importProject($this->designerConfig, $file);
+                $project = Designer\Factory::importProject($this->designerConfig, $file);
                 // fallback to load project from .dat if import from exported .dat.files directory failed
-                if (!$project instanceof \Designer_Project) {
-                    $project = \Designer_Factory::loadProject($this->designerConfig, $file);
+                if (!$project instanceof Designer\Project) {
+                    $project = Designer\Factory::loadProject($this->designerConfig, $file);
                 }
             } else {
-                $project = \Designer_Factory::loadProject($this->designerConfig, $file);
+                $project = Designer\Factory::loadProject($this->designerConfig, $file);
             }
 
-            if ($project instanceof \Designer_Project) {
+            if ($project instanceof Designer\Project) {
                 // convert project to 1.x version
-                if ($project->convertTo1x($this->designerConfig->get('js_path'))) {
-                    $this->storeProject();
-                }
+//                if ($project->convertTo1x($this->designerConfig->get('js_path'))) {
+//                    $this->storeProject();
+//                }
             } else {
                 throw new \Exception('Cannot load project ' . $file);
             }

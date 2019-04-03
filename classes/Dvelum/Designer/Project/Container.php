@@ -16,36 +16,30 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace Dvelum\App\Backend\Designer\Module;
-use Dvelum\App\Backend\Designer\Module;
+declare(strict_types=1);
 
+namespace Dvelum\Designer\Project;
 
-class Actionjs extends Module
+/**
+ * Class Designer_Project_Container
+ * System container for Designer_Project
+ */
+class Container
 {
-	/**
-	 * Get ActionJs Code
-	 */
-	public function loadAction()
-	{
-		$project = $this->getProject();
-		$this->response->success(['code'=>$project->getActionJs()]);
-	}
+    protected $name;
 
-	/**
-	 * Save ActionJs code
-	 */
-	public function saveAction()
-	{
-		$code = $this->request->post('code', 'raw', false);
+    public function __construct($name)
+    {
+        $this->name = $name;
+    }
 
-		if($code === false){
-            $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return;
-        }
+    public function getName()
+    {
+        return $this->name;
+    }
 
-		$project = $this->getProject();
-		$project->setActionJs($code);
-		$this->storeProject();
-		$this->response->success();
-	}
+    public function getClass()
+    {
+        return 'Designer_Project_Container';
+    }
 }

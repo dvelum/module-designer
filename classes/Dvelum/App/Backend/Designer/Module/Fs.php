@@ -19,6 +19,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
+use Dvelum\Designer\Manager;
 
 class Fs extends Module
 {
@@ -28,7 +29,7 @@ class Fs extends Module
     public function fsListAction()
     {
         $node = $this->request->post('node', 'string', '');
-        $manager = new \Designer_Manager($this->appConfig);
+        $manager = new Manager($this->appConfig);
         $this->response->json($manager->getProjectsList($node));
     }
 

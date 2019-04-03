@@ -20,8 +20,12 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Designer\Manager;
+use Dvelum\Designer\Project;
+use Dvelum\Designer\Project\Container;
 use Dvelum\Filter;
 use Dvelum\File;
+use Dvelum\Tree\Tree;
 
 class Objects extends Module
 {
@@ -124,8 +128,8 @@ class Objects extends Module
                         // append instance token
                         if ($addInstances && $object->isExtendedComponent()) {
                             $list[] = [
-                                'id' => \Designer_Project_Code::$NEW_INSTANCE_TOKEN . ' ' . $name,
-                                'title' => \Designer_Project_Code::$NEW_INSTANCE_TOKEN . ' ' . $name,
+                                'id' => Project_Code::$NEW_INSTANCE_TOKEN . ' ' . $name,
+                                'title' => Project_Code::$NEW_INSTANCE_TOKEN . ' ' . $name,
                                 'objClass' => $cfg['namespace'] . '.' . $name
                             ];
                         } else {
@@ -166,15 +170,15 @@ class Objects extends Module
 
     /**
      * Fill childs data array for tree panel
-     * @param \Tree $tree
+     * @param Tree $tree
      * @param mixed $root
      * @return array
      */
-    protected function fillContainers(\Tree $tree, $root = 0)
+    protected function fillContainers(Tree $tree, $root = 0)
     {
         //$exceptions = array('Store', 'Data_Store', 'Data_Store_Tree', 'Data_Store_Buffered', 'Model');
         $result = [];
-        $childs = $tree->getChilds($root);
+        $childs = $tree->getChildren($root);
 
         if (empty($childs)) {
             return [];
@@ -189,7 +193,7 @@ class Objects extends Module
             /**
              *  Stub for project container
              */
-            if ($object instanceof \Designer_Project_Container) {
+            if ($object instanceof Container) {
 
                 $item->text = $object->getName();
                 $item->expanded = true;
@@ -200,7 +204,7 @@ class Objects extends Module
                 $item->allowDrag = false;
                 $item->children = [];
 
-                if ($tree->hasChilds($v['id'])) {
+                if ($tree->hasChildren($v['id'])) {
                     $item->children = $this->fillContainers($tree, $v['id']);
                 }
 
@@ -219,7 +223,7 @@ class Objects extends Module
                 $inst = ' <span class="extInstanceLabel" data-qtip="Object instance">instance of </span>' . $object->getObject()->getName();
             }
 
-            if ($root === \Designer_Project::COMPONENT_ROOT) {
+            if ($root === Project::COMPONENT_ROOT) {
                 $ext = ' <span class="extCmpLabel" data-qtip="Extended component">ext</span> ';
                 $objectName = '<span class="extClassLabel">' . $objectName . '</span>';
             }
@@ -230,7 +234,7 @@ class Objects extends Module
             $item->isInstance = $object->isInstance();
             $item->leaf = true;
             $item->iconCls = $this->getIconClass($objectClass);
-            $item->allowDrag = \Designer_Project::isDraggable($objectClass);
+            $item->allowDrag = Project::isDraggable($objectClass);
 
             if ($objectClass == 'Docked') {
                 $item->iconCls = 'objectDocked';
@@ -240,12 +244,12 @@ class Objects extends Module
                 $item->iconCls = 'menuItemsIcon';
             }
 
-            if (\Designer_Project::isContainer($objectClass) && !$object->isInstance()) {
+            if (Project::isContainer($objectClass) && !$object->isInstance()) {
                 $item->leaf = false;
                 $item->children = [];
             }
 
-            if ($tree->hasChilds($v['id'])) {
+            if ($tree->hasChildren($v['id'])) {
                 $item->children = $this->fillContainers($tree, $v['id']);
             }
 
@@ -342,14 +346,14 @@ class Objects extends Module
 
         ];
 
-        if (\Designer_Project::isWindowComponent($objClass)) {
+        if (Project::isWindowComponent($objClass)) {
             return 'objectWindowIcon';
         }
 
         if (isset($config[$objClass])) {
             return $config[$objClass];
         } else {
-            if (\Designer_Project::isContainer($objClass)) {
+            if (Project::isContainer($objClass)) {
                 return 'objectIcon';
             } else {
                 return 'objectLeafIcon';
@@ -369,7 +373,7 @@ class Objects extends Module
         $newParent = $this->request->post('newparent', 'string', false);
 
         if (empty($newParent)) {
-            $newParent = \Designer_Project::LAYOUT_ROOT;
+            $newParent = Project::LAYOUT_ROOT;
         }
 
         $order = $this->request->post('order', 'array', []);
@@ -387,26 +391,26 @@ class Objects extends Module
 
         $itemData = $project->getTree()->getItem($id);
 
-        if (in_array($itemData['data']->getClass(), \Designer_Project::$storeClasses, true)) {
-            if ($newParent != \Designer_Project::LAYOUT_ROOT && $newParent != \Designer_Project::COMPONENT_ROOT) {
+        if (in_array($itemData['data']->getClass(), Project::$storeClasses, true)) {
+            if ($newParent != Project::LAYOUT_ROOT && $newParent != Project::COMPONENT_ROOT) {
                 $this->response->error('Store can exist only at Layout root or Components root');
                 return;
             }
         }
 
-        if ($itemData['data']->isInstance() && $newParent == \Designer_Project::COMPONENT_ROOT) {
+        if ($itemData['data']->isInstance() && $newParent == Project::COMPONENT_ROOT) {
             $this->response->error('Object instance cannot be converted to component');
             return;
         }
 
-        if ($itemData['parent'] == \Designer_Project::COMPONENT_ROOT && $newParent !== \Designer_Project::COMPONENT_ROOT && $project->hasInstances($id)) {
+        if ($itemData['parent'] == Project::COMPONENT_ROOT && $newParent !== Project::COMPONENT_ROOT && $project->hasInstances($id)) {
             $this->response->error('Component cannot be converted. Object Instances detected');
             return;
         }
 
         $object = $project->getObject($id);
 
-        if ($newParent == \Designer_Project::COMPONENT_ROOT) {
+        if ($newParent == Project::COMPONENT_ROOT) {
             $object->extendedComponent(true);
         } else {
             $object->extendedComponent(false);
@@ -496,12 +500,12 @@ class Objects extends Module
 
     /**
      * Get related projects
-     * @param \Designer_Project $project
+     * @param Project $project
      * @param array & $list - result
      */
     protected function getRelatedProjects($project, & $list)
     {
-        $manager = new \Designer_Manager($this->appConfig);
+        $manager = new Manager($this->appConfig);
         $projectConfig = $project->getConfig();
 
 

@@ -146,7 +146,7 @@ class Controller extends Backend\Controller
      */
     public function getModule(): string
     {
-        return 'Dvelum_Designer';
+        return 'Designer';
     }
 
     /**
@@ -154,7 +154,7 @@ class Controller extends Backend\Controller
      */
     public function getObjectName(): string
     {
-        return 'Dvelum_Designer';
+        return '';
     }
 
     /**
@@ -170,7 +170,7 @@ class Controller extends Backend\Controller
         $page->setTemplatesPath('system/' . $designerTheme . '/');
 
 
-        Model::factory('Medialib')->includeScripts();
+       // Model::factory('Medialib')->includeScripts();
         $this->resource->addJs('/resources/dvelum-module-designer/js/designer/lang/' . $this->designerConfig->get('lang') . '.js',1);
         $this->resource->addCss('/resources/dvelum-module-designer/css/style.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/lib/codemirror.css');
