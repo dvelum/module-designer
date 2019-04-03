@@ -39,16 +39,16 @@ class Designer_Storage
 
     /**
      * Set chache core
-     * @param Cache_Interface $manager
+     * @param \Dvelum\Cache\CacheInterface $manager
      */
-    static public function setCache(Cache_Interface $manager)
+    static public function setCache(\Dvelum\Cache\CacheInterface $manager)
     {
         self::$_cache = $manager;
     }
 
     /**
      * @param string $adapter - Adapter name
-     * @param  Config_Abstract - optional
+     * @param  \Dvelum\Config\ConfigInterface - optional
      * @return Designer_Storage_Adapter_Abstract
      */
     static public function getInstance($adapter, $config = false)

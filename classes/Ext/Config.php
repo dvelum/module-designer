@@ -340,7 +340,7 @@ class Ext_Config
 	
 	public function __toString()
 	{	
-		return "{\n".Utils_String::addIndent(implode(",\n", $this->asStringList()))."\n}";
+		return "{\n".\Dvelum\Utils\Strings::addIndent(implode(",\n", $this->asStringList()))."\n}";
 	}
 	
 	/**

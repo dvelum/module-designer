@@ -207,7 +207,7 @@ class Ext_Object implements Ext_Exportable
          * Store object items & dockedItems  property for using in initComponent
          */
         if ($this->isValidProperty('items')) {
-            $items = Utils_String::addIndent($this->items, 2, "\t", true);
+            $items = \Dvelum\Utils\Strings::addIndent($this->items, 2, "\t", true);
             $this->items = '';
         }
 
@@ -222,11 +222,11 @@ class Ext_Object implements Ext_Exportable
             foreach ($this->_elements as $oName => $object) {
                 switch ($object->getClass()) {
                     case 'Docked':
-                        $childObjectsInit .= $oName . ' =  ' . Utils_String::addIndent($object->__toString(), 1, "\t",
+                        $childObjectsInit .= $oName . ' =  ' . \Dvelum\Utils\Strings::addIndent($object->__toString(), 1, "\t",
                                 true) . ';' . "\n";
                         break;
                     case 'Component_Filter':
-                        $childObjectsInit .= $oName . ' =   Ext.create("' . $object->getViewObject()->getConfig()->getExtends() . '",' . Utils_String::addIndent($object->__toString(),
+                        $childObjectsInit .= $oName . ' =   Ext.create("' . $object->getViewObject()->getConfig()->getExtends() . '",' . \Dvelum\Utils\Strings::addIndent($object->__toString(),
                                 1, "\t", true) . "\n);" . "\n";
                         break;
                     default:
@@ -237,11 +237,11 @@ class Ext_Object implements Ext_Exportable
                                 $parentName = $namespace . '.' . $parentName;
                             }
 
-                            $childObjectsInit .= $oName . ' =  Ext.create("' . $parentName . '",' . Utils_String::addIndent($object->__toString(),
+                            $childObjectsInit .= $oName . ' =  Ext.create("' . $parentName . '",' . \Dvelum\Utils\Strings::addIndent($object->__toString(),
                                     1, "\t", true) . "\n);" . "\n";
 
                         } else {
-                            $childObjectsInit .= $oName . ' =  Ext.create("' . $object->getConfig()->getExtends() . '",' . Utils_String::addIndent($object->__toString(),
+                            $childObjectsInit .= $oName . ' =  Ext.create("' . $object->getConfig()->getExtends() . '",' . \Dvelum\Utils\Strings::addIndent($object->__toString(),
                                     1, "\t", true) . "\n);" . "\n";
                         }
                         break;
@@ -257,7 +257,7 @@ class Ext_Object implements Ext_Exportable
             "\t" . 'constructor: function(config) {' . "\n" .
             "\t\t\t" . 'var me = this; ' . "\n" .
             "\t\t\t" . 'config = Ext.apply(' . "\n" .
-            Utils_String::addIndent($this->__toString(), 3) .
+            \Dvelum\Utils\Strings::addIndent($this->__toString(), 3) .
             ', config || {});' . "\n" .
             "\t\t" . 'this.callParent(arguments);' . "\n" .
             "\t" . '},' . "\n" .
@@ -286,16 +286,16 @@ class Ext_Object implements Ext_Exportable
 
         if (strlen($childObjectsInit)) {
             $code .= "\t\t" . 'this.childObjects = {};' . "\n" .
-                Utils_String::addIndent($childObjectsInit, 2) . "\n";
+                \Dvelum\Utils\Strings::addIndent($childObjectsInit, 2) . "\n";
         }
 
         if (!empty($dockedItems)) {
-            $code .= "\t\t" . ' this.dockedItems = ' . Utils_String::addIndent($dockedItems, 2, "\t", true) . ";\n";
+            $code .= "\t\t" . ' this.dockedItems = ' . \Dvelum\Utils\Strings::addIndent($dockedItems, 2, "\t", true) . ";\n";
         }
 
         if (!empty($items)) {
             if (is_array($items)) {
-                $code .= "\t\t" . 'this.items = [' . Utils_String::addIndent(implode("\n,", $items), 3, "\t",
+                $code .= "\t\t" . 'this.items = [' . \Dvelum\Utils\Strings::addIndent(implode("\n,", $items), 3, "\t",
                         true) . "];\n";
             } else {
                 $code .= "\t\t" . 'this.items = ' . $items . ';' . "\n";
@@ -320,10 +320,10 @@ class Ext_Object implements Ext_Exportable
         if (isset($this->_methods) && !empty($this->_methods)) {
             foreach ($this->_methods as $methodName => $methodData) {
                 $code .= ',' . "\n";
-                $code .= Utils_String::addIndent($methodData['jsDoc']) . "\n";
+                $code .= \Dvelum\Utils\Strings::addIndent($methodData['jsDoc']) . "\n";
 
                 $code .= "\t" . $methodName . ':function(' . $methodData['params'] . '){' . "\n";
-                $code .= Utils_String::addIndent($methodData['code'], 2) . "\n";
+                $code .= \Dvelum\Utils\Strings::addIndent($methodData['code'], 2) . "\n";
                 $code .= "\t}\n";
             }
         }

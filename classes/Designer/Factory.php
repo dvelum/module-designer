@@ -155,13 +155,13 @@ class Designer_Factory
     /**
      * Init layout from designer project
      * @property string $projectFile - designer project related path
-     * @property Config_Abstract $designerConfig
+     * @property ConfigInterface $designerConfig
      * @property array $replaceTemplates, optional
      * @property string $renderTo
      * @property string $moduleId
      * @todo cache the code
      */
-    static public function compileDesktopProject($projectFile , Config_Abstract $designerConfig , $replace, $renderTo, $moduleId)
+    static public function compileDesktopProject($projectFile , ConfigInterface $designerConfig , $replace, $renderTo, $moduleId)
     {
         $projectData = [
             'applicationClassesNamespace' =>false,

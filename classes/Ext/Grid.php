@@ -247,9 +247,9 @@ class Ext_Grid extends Ext_Object
             $column = $v['data'];
             $column->columns = '';
             if ($tree->hasChilds($v['id']))
-                $column->columns = "[\n\t" . Utils_String::addIndent(implode(",\n", $this->_compileColumns($tree, $v['id'])), 2) . "\n]";
+                $column->columns = "[\n\t" . \Dvelum\Utils\Strings::addIndent(implode(",\n", $this->_compileColumns($tree, $v['id'])), 2) . "\n]";
 
-            $result[] = Utils_String::addIndent($column->__toString(), 2);
+            $result[] = \Dvelum\Utils\Strings::addIndent($column->__toString(), 2);
         }
         return $result;
     }
@@ -386,10 +386,10 @@ class Ext_Grid extends Ext_Object
         $this->_config->columns = $columns;
 
         if (!empty($plugins))
-            $this->_config->plugins = '[' . "\n" . Utils_String::addIndent(implode(",\n", $plugins)) . "\n]";
+            $this->_config->plugins = '[' . "\n" . \Dvelum\Utils\Strings::addIndent(implode(",\n", $plugins)) . "\n]";
 
         if (!empty($features))
-            $this->_config->features = '[' . "\n" . Utils_String::addIndent(implode(",\n", $features)) . "\n]";
+            $this->_config->features = '[' . "\n" . \Dvelum\Utils\Strings::addIndent(implode(",\n", $features)) . "\n]";
 
         return $this->_config->__toString();
     }

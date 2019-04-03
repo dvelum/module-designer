@@ -182,7 +182,7 @@ function objectLocalMethods(array $methods , $id)
   $s='<div id="'.$id.'" style=="width:100%" class="collapsed">';
   if(!empty($methods)){
     foreach ($methods as $item){
-      $s.='<div><pre>'.$item->getJsDoc().'<br>'.$item->getName().':function('.$item->getParamsLine().'){'."\n".Utils_String::addIndent($item->getCode())."\n".'}</pre></div>';
+      $s.='<div><pre>'.$item->getJsDoc().'<br>'.$item->getName().':function('.$item->getParamsLine().'){'."\n".\Dvelum\Utils\Strings::addIndent($item->getCode())."\n".'}</pre></div>';
     }
   }
   $s.='</div>';
@@ -199,7 +199,7 @@ if(!$project)
 $debugger = new Designer_Debugger($project);
 $wwwRoot = Request::wwwRoot();
 
-$res = Resource::getInstance();
+$res = \Dvelum\Resource::factory();
 $res->addCss('/css/system/style.css' , 2);
 $res->addCss('/css/system/gray/style.css' , 3);
 ?>

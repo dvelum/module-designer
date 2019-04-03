@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+use \Dvelum\Utils\Strings;
+
 class Designer_Project_Code
 {
     static public $NEW_INSTANCE_TOKEN = '[new:]';
@@ -217,7 +219,7 @@ class Designer_Project_Code
             if($parentObject instanceof Ext_Object)
             {
                 if(!empty($items) && $parentObject->isValidProperty('items'))
-                    $parentObject->items = Utils_String::addIndent("[\n" . Utils_String::addIndent(implode(",\n" , $items)) . "\n]\n");
+                    $parentObject->items = Strings::addIndent("[\n" . Strings::addIndent(implode(",\n" , $items)) . "\n]\n");
 
                 if(!empty($docked) && $parentObject->isValidProperty('dockedItems'))
                     $parentObject->dockedItems = $docked;
@@ -305,9 +307,9 @@ class Designer_Project_Code
 
                 $object->addListener(
                     $event,
-                    Utils_String::addIndent("{\n".
-                        Utils_String::addIndent("fn:function(".$params."){\n".
-                            Utils_String::addIndent($config['code'])
+                    Strings::addIndent("{\n".
+                        Strings::addIndent("fn:function(".$params."){\n".
+                            Strings::addIndent($config['code'])
                             ."\n},\nscope:this".$bufferString)
                         ."\n}",
                         2,
@@ -386,7 +388,7 @@ class Designer_Project_Code
             if(isset($eventsConfig['handler']))
                 $params = implode(',', array_keys($eventsConfig['handler']));
 
-            $object->addListener('handler' ,"function(".$params."){\n".Utils_String::addIndent($config['code'],2)."\n}");
+            $object->addListener('handler' ,"function(".$params."){\n".Strings::addIndent($config['code'],2)."\n}");
         }
 
         if(!$object->isInstance() && !empty($objectEvents))
@@ -410,7 +412,7 @@ class Designer_Project_Code
 
                     $object->addListener($event ,
                         "{\n\t\t\tfn:function(".$params."){\n".
-                        Utils_String::addIndent($config['code'],2).
+                        Strings::addIndent($config['code'],2).
                         "\n},\n\t\t\tscope:this\n\t\t".$bufferString."}\n"
                     );
                 }
@@ -434,18 +436,18 @@ class Designer_Project_Code
         {
             case 'Component_JSObject' :
             case 'Docked' :
-                $result =  "\n". $objectVar . ' = ' . Utils_String::addIndent($object->__toString(),1,"\t",true) . ';' . "\n";
+                $result =  "\n". $objectVar . ' = ' . Strings::addIndent($object->__toString(),1,"\t",true) . ';' . "\n";
                 break;
 
             case 'Component_Filter':
                 $result =  "\n". $objectVar . ' = Ext.create("' .
                     $object->getViewObject()->getConfig()->getExtends() . '",' .
-                    Utils_String::addIndent($object->__toString()) . "\n" .
+                    Strings::addIndent($object->__toString()) . "\n" .
                     ');' . "\n";
                 break;
 
             case 'Menu':
-                $result =  "\n". $objectVar . ' = ' . Utils_String::addIndent($object->__toString(),1,"\t",true) . ';' . "\n";
+                $result =  "\n". $objectVar . ' = ' . Strings::addIndent($object->__toString(),1,"\t",true) . ';' . "\n";
 
                 break;
 
@@ -456,7 +458,7 @@ class Designer_Project_Code
 
                     $result =  "\n". $objectVar . ' = Ext.create("' .
                         Ext_Code::appendNamespace($object->getObject()->getName()) . '",' .
-                        Utils_String::addIndent($object->__toString())."\n".
+                        Strings::addIndent($object->__toString())."\n".
                         ');' . "\n";
 
                 }else{
@@ -467,7 +469,7 @@ class Designer_Project_Code
                     }else{
                         $result =  "\n". $objectVar . ' = Ext.create("' .
                             $object->getConfig()->getExtends() . '",' .
-                            Utils_String::addIndent($object->__toString())."\n".
+                            Strings::addIndent($object->__toString())."\n".
                             ');' . "\n";
                     }
                 }
@@ -492,7 +494,7 @@ class Designer_Project_Code
                     continue;
                 //$result.= "\n". $objectVar. '.on("click", function(){'."\n".Utils_String::addIndent($config['code'],2)."\n})";
                 else
-                    $result.= "\n". $objectVar. '.on("'.$event.'" , function('.$params.'){'."\n".Utils_String::addIndent($config['code'],2)."\n});";
+                    $result.= "\n". $objectVar. '.on("'.$event.'" , function('.$params.'){'."\n".Strings::addIndent($config['code'],2)."\n});";
             }
         }
         return $result;
@@ -556,8 +558,8 @@ class Designer_Project_Code
 
             $column->addListener($event ,
                 "{".
-                Utils_String::addIndent("\n\tfn:function(".$params."){\n".
-                    Utils_String::addIndent($config['code'],3)
+                Strings::addIndent("\n\tfn:function(".$params."){\n".
+                    Strings::addIndent($config['code'],3)
                     ."\n\t},\n\tscope:this".$bufferString."\n",2)
                 ."}")
             ;
@@ -594,8 +596,8 @@ class Designer_Project_Code
 
             $filter->addListener($event ,
                 "{".
-                Utils_String::addIndent("\n\tfn:function(".$params."){\n".
-                    Utils_String::addIndent($config['code'],3)
+                Strings::addIndent("\n\tfn:function(".$params."){\n".
+                    Strings::addIndent($config['code'],3)
                     ."\n\t},\n\tscope:this".$bufferString."\n",2)
                 ."}"
             );
@@ -632,7 +634,7 @@ class Designer_Project_Code
                 if(isset($eventsConfig[$event]))
                     $params = implode(',', array_keys($eventsConfig[$event]));
 
-                $object->addListener($event ,"function(".$params."){\n".Utils_String::addIndent($config['code'],2)."\n}");
+                $object->addListener($event ,"function(".$params."){\n".Strings::addIndent($config['code'],2)."\n}");
                 $object->scope = 'this';
             }
         }
@@ -670,9 +672,9 @@ class Designer_Project_Code
 
             $object->addListener($event ,
                 "{\n".
-                Utils_String::addIndent("fn:function(".$params."){\n".
-                    Utils_String::addIndent($config['code'],2)."\n},\n".
-                    Utils_String::addIndent("scope:this".$bufferString."\n"),2).
+                Strings::addIndent("fn:function(".$params."){\n".
+                    Strings::addIndent($config['code'],2)."\n},\n".
+                    Strings::addIndent("scope:this".$bufferString."\n"),2).
                 "}"
             );
         }
@@ -731,7 +733,7 @@ class Designer_Project_Code
                     $params = implode(',', array_keys($eventsConfig[$event]));
 
                 if($event === 'handler'){
-                    $o->addListener($event ,"function(".$params."){\n".Utils_String::addIndent($config['code'],2)."\n}");
+                    $o->addListener($event ,"function(".$params."){\n".Strings::addIndent($config['code'],2)."\n}");
                 } else{
 
                     $bufferString = '';
@@ -741,7 +743,7 @@ class Designer_Project_Code
 
                     $o->addListener($event ,
                         "{\n\t\t\tfn:function(".$params."){\n".
-                        Utils_String::addIndent($config['code'],4)
+                        Strings::addIndent($config['code'],4)
                         ."\n\t\t\t},\n\t\t\tscope:this".$bufferString."\n\t\t}\n"
                     );
                 }
@@ -784,7 +786,7 @@ class Designer_Project_Code
         }
 
         if(!empty($items) && $o->isValidProperty('items'))
-            $o->items = Utils_String::addIndent("[\n" . Utils_String::addIndent(implode(",\n" , $items)) . "\n]\n");
+            $o->items = Strings::addIndent("[\n" . Strings::addIndent(implode(",\n" , $items)) . "\n]\n");
 
         if(!empty($docked) && $o->isValidProperty('dockedItems'))
             $o->dockedItems = $docked;
@@ -877,7 +879,7 @@ class Designer_Project_Code
 
                     if($event === 'handler')
                     {
-                        $item['data']->addListener($event ,"function(".$params."){\n".Utils_String::addIndent($config['code'],2)."\n}");
+                        $item['data']->addListener($event ,"function(".$params."){\n".Strings::addIndent($config['code'],2)."\n}");
                         $item['data']->scope = 'this';
                     }
                     else{
@@ -889,9 +891,9 @@ class Designer_Project_Code
 
                         $item['data']->addListener($event ,
                             "{\n".
-                            Utils_String::addIndent("fn:function(".$params."){\n".
-                                Utils_String::addIndent($config['code'],2)."\n},\n" .
-                                Utils_String::addIndent("scope:this".$bufferString)."\n}" , 2)
+                            Strings::addIndent("fn:function(".$params."){\n".
+                                Strings::addIndent($config['code'],2)."\n},\n" .
+                                Strings::addIndent("scope:this".$bufferString)."\n}" , 2)
                             ."\n"
                         );
 
@@ -914,7 +916,7 @@ class Designer_Project_Code
             $container = $this->_project->getItemData($parent);
 
             if(!empty($items))
-                $container->items = "[\n" . Utils_String::addIndent(implode(",\n" , $items),1) . "\n]\n";
+                $container->items = "[\n" . Strings::addIndent(implode(",\n" , $items),1) . "\n]\n";
 
             if(!empty($docked))
                 $container->dockedItems = implode(',' , $docked);

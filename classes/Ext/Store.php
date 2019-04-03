@@ -183,7 +183,7 @@ class Ext_Store extends Ext_Object
 //                    $field->mapping = $model;
 //                }
 //            }
-            $this->fields = "[\n" . Utils_String::addIndent(implode(',', array_values($this->_fields))) . "\n]";
+            $this->fields = "[\n" . \Dvelum\Utils\Strings::addIndent(implode(',', array_values($this->_fields))) . "\n]";
         }
 
         if ($this->_config->isValidProperty('model') && strlen($this->_config->model)) {

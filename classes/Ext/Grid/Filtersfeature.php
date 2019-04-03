@@ -73,7 +73,7 @@ class Ext_Grid_Filtersfeature extends Ext_Object
     {
         $this->_config->setXType('');
         $this->_config->setFType('filters');
-        $this->_config->filters = "[\n\t".Utils_String::addIndent(implode(",\n",array_values($this->_filters)),2)."\n]";
+        $this->_config->filters = "[\n\t".\Dvelum\Utils\Strings::addIndent(implode(",\n",array_values($this->_filters)),2)."\n]";
         return parent::__toString();
     }
 }

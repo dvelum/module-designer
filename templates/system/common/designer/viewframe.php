@@ -1,6 +1,6 @@
 <?php
 if(!defined('DVELUM'))exit;
-$res = Resource::getInstance();
+$res = \Dvelum\Resource::factory();
 $res->addJs('js/app/system/common.js' , -1);
 $token = '';
 if($this->useCSRFToken){

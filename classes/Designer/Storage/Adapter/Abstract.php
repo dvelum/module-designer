@@ -24,7 +24,7 @@ abstract class Designer_Storage_Adapter_Abstract
 {
 	/**
 	 * Adapter config
-	 * @var Config_Abstract - optional
+	 * @var \Dvelum\Config\ConfigInterface - optional
 	 */
 	protected $_config;
 
