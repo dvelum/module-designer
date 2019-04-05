@@ -95,7 +95,7 @@ class Ext_Grid extends Ext_Object
         if (!isset(self::$advancedProperties[$key])) {
             return false;
         }
-        $this->_advancedPropertyValues[$key] = Filter::filterValue(self::$advancedProperties[$key], $value);
+        $this->_advancedPropertyValues[$key] = \Dvelum\Filter::filterValue(self::$advancedProperties[$key], $value);
         return true;
     }
 
@@ -449,7 +449,7 @@ class Ext_Grid extends Ext_Object
         $colData = [];
 
         if (!empty($columns)) {
-            $columns = Utils::sortByField($columns, 'order');
+            $columns = \Dvelum\Utils::sortByField($columns, 'order');
 
             foreach ($columns as $v) {
                 $colData[$v['id']] = [

@@ -115,7 +115,7 @@ class Ext_Config
         switch ($this->_properties->$name) {
             case Ext_Property::Boolean:
                 if((is_string($value) && strlen($value)) || !is_string($value))
-                    $value = Filter::filterValue('boolean', $value);
+                    $value = \Dvelum\Filter::filterValue('boolean', $value);
                 break;
         }
 
@@ -146,7 +146,7 @@ class Ext_Config
 				switch ($this->_properties->$name) {
 					case Ext_Property::Boolean:
 						if((is_string($value) && strlen($value)) || !is_string($value))
-							$value = Filter::filterValue('boolean', $value);
+							$value = \Dvelum\Filter::filterValue('boolean', $value);
 						break;
 				}
 				$this->_data[$name] = $value;

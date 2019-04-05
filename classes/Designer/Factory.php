@@ -133,7 +133,7 @@ class Designer_Factory
         {
             foreach ($projectData['includes'] as $file)
             {
-                if(File::getExt($file) == '.css')
+                if(\Dvelum\File::getExt($file) == '.css')
                 {
                     if(strpos($file , '?') === false){
                         $file = $file .'?v='. $cachedKey;
@@ -240,7 +240,7 @@ class Designer_Factory
             $wwwRoot = Request::wwwRoot();
             foreach ($includes as $file)
             {
-                if(File::getExt($file) == '.css')
+                if(\Dvelum\File::getExt($file) == '.css')
                 {
                     if(strpos($file , '?') === false){
                         $file = $file .'?'. $cachedKey;
@@ -303,7 +303,7 @@ class Designer_Factory
         {
             foreach ($projectConfig['files'] as $file)
             {
-                $ext = File::getExt($file);
+                $ext = \Dvelum\File::getExt($file);
 
                 if($ext === '.js' || $ext === '.css')
                 {
@@ -326,7 +326,7 @@ class Designer_Factory
 
         if($selfInclude)
         {
-            $layoutCacheFile = Utils::createCachePath($applicationConfig->get('jsCachePath'), $cacheKey.'.js');
+            $layoutCacheFile = \Dvelum\Utils::createCachePath($applicationConfig->get('jsCachePath'), $cacheKey.'.js');
 
             /**
              * @todo remove slow operation

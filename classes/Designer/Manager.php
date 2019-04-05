@@ -84,7 +84,7 @@ class Designer_Manager
             if(!file_exists($nodePath))
                 continue;
 
-            $items = File::scanFiles($nodePath , array('.dat'), false, File::Files_Dirs);
+            $items = \Dvelum\File::scanFiles($nodePath , array('.dat'), false, File::Files_Dirs);
 
             if(!empty($items))
             {

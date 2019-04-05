@@ -148,7 +148,7 @@ class Ext_Grid_Column_Action extends Ext_Grid_Column
         $actionsData = [];
 
         if (!empty($actions)) {
-            $actions = Utils::sortByField($actions, 'order');
+            $actions = \Dvelum\Utils::sortByField($actions, 'order');
             foreach ($actions as $v) {
                 $actionsData[$v['id']] = [
                     'id' => $v['id'],

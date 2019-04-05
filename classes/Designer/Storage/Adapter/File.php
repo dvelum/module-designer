@@ -16,7 +16,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+use Dvelum\Utils;
 /**
  * File adapter for Designer_Storage
  * @author Kirill A Egorov 2012
@@ -109,7 +109,7 @@ class Designer_Storage_Adapter_File extends Designer_Storage_Adapter_Abstract
                 return false;
             }
         } else {
-            File::rmdirRecursive($this->exportPath);
+            \Dvelum\File::rmdirRecursive($this->exportPath);
         }
 
         /*
