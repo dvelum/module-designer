@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\App\Backend\Localization\Manager;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Designer;
@@ -172,7 +173,7 @@ class Project extends Module
             $config['langs'] = [];
         }
 
-        $locManager = new \Backend_Localization_Manager($this->appConfig);
+        $locManager = new Manager($this->appConfig);
         $langs = $locManager->getLangs(false);
 
         $paths = [];

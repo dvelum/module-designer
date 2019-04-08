@@ -283,7 +283,7 @@ class Ext_Grid extends Ext_Object
     public function __toString()
     {
         $this->_convertListeners();
-        $lang = Lang::lang();
+        $lang = \Dvelum\Lang::lang();
         $plugins = [];
         $features = [];
 
