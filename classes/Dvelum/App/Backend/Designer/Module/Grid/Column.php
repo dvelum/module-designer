@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module\Grid;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\App\Dictionary\Manager;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Filter;
@@ -175,7 +176,7 @@ class Column extends Module
             return;
         }
 
-        $manager = \Dictionary_Manager::factory();
+        $manager = Manager::factory();
         $data = [];
         $list = $manager->getList();
 

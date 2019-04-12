@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\App\Dictionary\Manager;
 use Dvelum\Config;
 use Dvelum\Designer\Factory;
 use Dvelum\Orm\Model;
@@ -110,7 +111,7 @@ class Viewframe extends Module
             }
         }
 
-        $dManager = \Dictionary_Manager::factory();
+        $dManager = Manager::factory();
         $key = 'vf_' . md5($dManager->getDataHash() . serialize($project));
 
         $templates = $designerConfig->get('templates');
@@ -164,7 +165,7 @@ class Viewframe extends Module
         var canEdit = true;
     
         app.permissions = Ext.create("app.PermissionsStorage");
-        var rights = ' . json_encode(User::getInstance()->getPermissions()) . ';
+        var rights = ' . json_encode(User::getInstance()->getModuleAcl()->getPermissions()) . ';
         app.permissions.setData(rights);
     
         Ext.onReady(function(){

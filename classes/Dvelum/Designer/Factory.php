@@ -363,7 +363,7 @@ class Factory
         /**
          * @todo remove slow operation
          */
-        $dManager = \Dictionary_Manager::factory();
+        $dManager = \Dvelum\App\Dictionary\Manager::factory();
         return md5(@filemtime($projectFile) . $projectFile . $dManager->getDataHash());
     }
     /**

@@ -691,7 +691,7 @@ class Designer_Project_Code
 
         if($object->getClass() === 'Component_Field_System_Medialibhtml')
         {
-             Model::factory('Medialib')->includeScripts();
+             \Dvelum\Orm\Model::factory('Medialib')->includeScripts();
         }
 
         $code = array('defines'=>'','layout'=>'');

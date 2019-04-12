@@ -21,7 +21,7 @@ class Ext_Component_Field_System_Dictionary extends Ext_Component_Field
 
 		if($this->isValidProperty('dictionary') && strlen($this->dictionary))
 		{
-			$dM = Dictionary_Manager::factory();
+			$dM = \Dvelum\App\Dictionary\Manager::factory();
 
 			if($dM->isValidDictionary($this->dictionary))
 			{
@@ -31,7 +31,7 @@ class Ext_Component_Field_System_Dictionary extends Ext_Component_Field
 			    	$allowBlank = true;
 			    }
 
-				$data = Dictionary::factory($this->dictionary)->__toJs(false , $allowBlank);
+				$data = \Dvelum\App\Dictionary::factory($this->dictionary)->__toJs(false , $allowBlank);
 
 				if(($this->_config->isValidProperty('showReset') && $this->_config->showReset) || $this->_config->isValidProperty('showAll') && $this->_config->showAll)
                 {

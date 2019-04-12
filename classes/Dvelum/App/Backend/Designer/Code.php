@@ -29,23 +29,23 @@ class Backend_Designer_Code
 
         $reflector = new ReflectionClass($controllerName);
 
-        if (!$reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller') && !$reflector->isSubclassOf('Backend_Controller') && !$reflector->isSubclassOf('Frontend_Controller')) {
+        if (!$reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')  && !$reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
             return '';
         }
 
         $url = [];
 
-        $manager = new Modules_Manager();
+        $manager = new \Dvelum\App\Module\Manager();
 
-        if ($reflector->isSubclassOf('Backend_Controller') || $reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')) {
+        if ($reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')) {
             $url[] = $templates['adminpath'];
             $url[] = $manager->getModuleName($controllerName);
-        } elseif ($reflector->isSubclassOf('Frontend_Controller') || $reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
+        } elseif ($reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
             $routerType = $frontConfig->get('router');
-            if ($routerType == 'Module') {
+            if (strtolower($routerType) == 'cms') {
                 $module = self::_moduleByClass($controllerName);
                 if ($module !== false) {
-                    $urlcode = Model::factory('Page')->getCodeByModule($module);
+                    $urlcode = \Dvelum\Orm\Model::factory('Page')->getCodeByModule($module);
                     if ($urlcode !== false) {
                         $url[] = $urlcode;
                     }
@@ -91,7 +91,7 @@ class Backend_Designer_Code
      */
     static public function getPossibleActions($controllerName)
     {
-        $manager = new Modules_Manager();
+        $manager = new \Dvelum\App\Module\Manager();
         $appCfg = Config::storage()->get('main.php');
         $designerConfig = Config::storage()->get($appCfg->get('configs') . 'designer.php');
 
@@ -99,7 +99,7 @@ class Backend_Designer_Code
 
         $reflector = new ReflectionClass($controllerName);
 
-        if (!$reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller') && !$reflector->isSubclassOf('Backend_Controller') && !$reflector->isSubclassOf('Frontend_Controller')) {
+        if (!$reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')  && !$reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
             return array();
         }
 
@@ -108,16 +108,18 @@ class Backend_Designer_Code
 
         $url = array();
 
-        if ($reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller') || $reflector->isSubclassOf('Backend_Controller')) {
+        if ($reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')) {
             $url[] = $templates['adminpath'];
             $url[] = $manager->getModuleName($controllerName);
-        } elseif ($reflector->isSubclassOf('Frontend_Controller')) {
+        } elseif ($reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
 
-            if ($appCfg['frontend_router_type'] == 'module') {
+            $frontConfig = Config::storage()->get('frontend');
+
+            if (strtolower($frontConfig->get('router')) == 'cms') {
 
                 $module = self::_moduleByClass($controllerName);
                 if ($module !== false) {
-                    $urlcode = Model::factory('Page')->getCodeByModule($module);
+                    $urlcode = \Dvelum\Orm\Model::factory('Page')->getCodeByModule($module);
                     if ($urlcode !== false) {
                         $url[] = $urlcode;
                     }

@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\App\Dictionary\Manager;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Filter;
@@ -110,7 +111,7 @@ class Properties extends Module
      */
     public function listDictionariesAction()
     {
-        $manager = \Dictionary_Manager::factory();
+        $manager = Manager::factory();
         $list = $manager->getList();
         $data = [];
         if (!empty($list)) {
