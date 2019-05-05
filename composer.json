@@ -23,7 +23,7 @@
     "dvelum/dvelum": ">=2.1.0"
   },
   "scripts": {
-    "post-install-cmd": [
+    "post-package-install": [
       "php ./console.php /external-add/dvelum/module-designer"
     ]
   }
