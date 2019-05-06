@@ -1,11 +1,36 @@
 <?php
-class Backend_Designer_Generator_Component_Window implements Backend_Designer_Generator_Component
+/**
+ *  DVelum project https://github.com/dvelum/dvelum
+ *  Copyright (C) 2011-2019  Kirill Yegorov
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Dvelum\App\Backend\Designer\Generator\Component;
+
+use Dvelum\App\Backend\Designer\Generator\Component;
+use Dvelum\Designer\Project;
+
+use \Ext_Factory;
+
+class Window implements Component
 {
     /**
      * (non-PHPdoc)
      * @see Backend_Designer_Generator_Component::addComponent()
      */
-	public function addComponent(Designer_Project $project, $id , $parentId = false)
+	public function addComponent(Project $project, $id , $parentId = false)
 	{
 	    $windowName = $project->uniqueId($id);
 	    $dockedName = $project->uniqueId($windowName.'__docked');
@@ -91,7 +116,7 @@ class Backend_Designer_Generator_Component_Window implements Backend_Designer_Ge
         $m = $methodsManager->addMethod(
             $windowName, 
             'onSaveData' , 
-            array() , 
+            [] ,
             '
       // remove alert, update submit url, set params
       Ext.Msg.alert(appLang.MESSAGE, "Save button click");
