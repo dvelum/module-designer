@@ -4,7 +4,6 @@ trait Ext_Property_Form_Labelable
     public $activeError = Ext_Property::String;
     public $activeErrorsTpl = Ext_Property::Object;
     public $afterBodyEl = Ext_Property::String;
-    public $afterLabelTextTpl = Ext_Property::Object;
     public $afterLabelTpl = Ext_Property::Object;
     public $afterSubTpl = Ext_Property::Object;
     public $autoFitErrors = Ext_Property::Boolean;
