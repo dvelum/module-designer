@@ -59,7 +59,7 @@ class Project extends Module
         $writeFile = str_replace('//', '/', $writePath . $cfgPath . $relFile);
 
         // In accordance with configs merge priority
-        rsort($paths);
+        krsort($paths);
 
         $file = false;
 
