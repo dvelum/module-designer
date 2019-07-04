@@ -255,6 +255,9 @@
 .tagIcon{
     background-image: url(../images/designer/tag.png) !important;
 }
+.upIcon{
+    background-image: url(../images/designer/aup.png) !important;
+}
 
 .urlTrigger{
     width:25px !important;

@@ -733,7 +733,7 @@ Ext.define('designer.properties.Panel', {
                 }
 
                 var editor = Ext.create('designer.codeEditor', {
-                    sourceCode: response.data,
+                    sourceCode: response.data.code,
                     readOnly: true
                 });
 

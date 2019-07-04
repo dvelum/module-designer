@@ -17,7 +17,8 @@ Ext.define('designer.objects.TreeModel', {
         {name: 'id', type: 'string'},
         {name: 'text', type: 'string'},
         {name: 'objClass', type: 'string'},
-        {name: 'isInstance', type: 'boolean'}
+        {name: 'isInstance', type: 'boolean'},
+        {name: 'instanceOf', type: 'string'}
     ],
     idProperty: 'id'
 });
@@ -57,6 +58,8 @@ Ext.define('designer.objects.Tree', {
     selectedNode: false,
     initComponent: function () {
 
+        var me = this;
+
         this.nodesState = {};
 
         this.dataStore = Ext.create('Ext.data.TreeStore', {
@@ -67,7 +70,7 @@ Ext.define('designer.objects.Tree', {
                 reader: {
                     type: 'json',
                     idProperty: 'id'
-                },
+                }
             },
             defaultRootId: '_ROOT_',
             defaultRootText: '/',
@@ -107,7 +110,37 @@ Ext.define('designer.objects.Tree', {
                     },
                     scope: this
                 }
-            }
+            },
+            hideHeaders:true,
+            columns:[
+                {
+                    xtype: 'treecolumn',
+                    dataIndex:'text',
+                    flex:1,
+                },{
+                    xtype:'actioncolumn',
+                    dataIndex:'isInstance',
+                    width:20,
+                    items:[
+                        {
+                            iconCls:'upIcon',
+                            isDisabled:function(v,r,c,i,rec){
+                                return !rec.get('isInstance');
+                            },
+                            getClass:function(val,meta,rec){
+                                if(!rec.get('isInstance')){
+                                     return "x-hide-display";
+                                }else{
+                                    return 'upIcon';
+                                }
+                            },
+                            handler:function(v,r,c,i,e,rec){
+                                me.focusAtObject(rec.get('instanceOf'));
+                            }
+                        }
+                    ]
+                }
+            ]
         });
 
         this.treePanel.on('select', function (tree, record, index, eOpts) {
@@ -146,11 +179,7 @@ Ext.define('designer.objects.Tree', {
             disabled: true,
             listeners: {
                 click: {
-                    fn: function () {
-                        this.treePanel.expandAll();
-                        this.collapseBtn.enable();
-                        this.expandBtn.disable();
-                    },
+                    fn: me.expandNodes,
                     scope: this
                 }
             }
@@ -174,6 +203,27 @@ Ext.define('designer.objects.Tree', {
                 scroller.mon(scroller.scrollEl, 'scroll', scroller.onElScroll, scroller);
             }
         }, this);
+    },
+    expandNodes:function(){
+        this.treePanel.expandAll();
+        this.collapseBtn.enable();
+        this.expandBtn.disable();
+    },
+    /**
+     * Focus at object node
+     * @param objectName
+     */
+    focusAtObject:function(objectName){
+        this.expandNodes();
+        var store = this.treePanel.getStore();
+        var index = store.findExact('id', objectName);
+        if(index!=-1){
+            var node = store.getNodeById(objectName);
+            if(node!=null){
+                this.treePanel.getSelectionModel().select(node , false , true);
+            }
+            this.treePanel.getView().focusRow(store.getAt(index));
+        }
     },
     /**
      * Hard code fix for Ext.Tree.Store loading
@@ -266,5 +316,4 @@ Ext.define('designer.objects.Tree', {
             failure: app.formFailure
         });
     }
-
 });
