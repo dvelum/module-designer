@@ -167,7 +167,7 @@ class Controller extends Backend\Controller
         // change theme
         $designerTheme = $this->designerConfig->get('theme');
         $configBackend->set('theme', $designerTheme);
-        $page = \Page::getInstance();
+        $page = \Dvelum\Page\Page::factory();
         $page->setTemplatesPath('system/' . $designerTheme . '/');
 
 
