@@ -91,7 +91,7 @@ class Manager
             if(!file_exists($nodePath))
                 continue;
 
-            $items = File::scanFiles($nodePath , array('.dat'), false, File::Files_Dirs);
+            $items = File::scanFiles($nodePath , array('.dat'), false, File::FILES_DIRS);
 
             if(!empty($items))
             {

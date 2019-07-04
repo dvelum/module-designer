@@ -402,7 +402,7 @@ class Project
      * @return \Ext_Object
      * @throws \Exception
      */
-    public function getObject(string $name) : \Ext_Object
+    public function getObject(string $name)
     {
         $objData = $this->tree->getItem($name);
         return $objData['data'];

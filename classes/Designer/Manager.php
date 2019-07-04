@@ -18,7 +18,6 @@
 */
 use Dvelum\Config\ConfigInterface;
 use Dvelum\Config;
-
 /**
  * Designer Factory Wrapper
  */
@@ -28,17 +27,17 @@ class Designer_Manager
      * Application configuration
      * @var ConfigInterface
      */
-    protected $_appConfig;
+    protected $appConfig;
     /**
      * Designer configuration
      * @var ConfigInterface
      */
-    protected $_designerConfig;
+    protected $designerConfig;
 
     public function __construct(ConfigInterface $appConfig)
     {
-        $this->_appConfig = $appConfig;
-        $this->_designerConfig = Config::storage()->get('designer.php');
+        $this->appConfig = $appConfig;
+        $this->designerConfig = Config::storage()->get('designer.php');
     }
 
     /**
@@ -50,7 +49,7 @@ class Designer_Manager
     public function renderProject($projectFile , $renderTo = false, $moduleId = false)
     {
         $replaces = $this->getReplaceConfig();
-        Designer_Factory::runProject($projectFile , $this->_designerConfig , $replaces , $renderTo, $moduleId);
+        Designer_Factory::runProject($projectFile , $this->designerConfig , $replaces , $renderTo, $moduleId);
     }
 
     /**
@@ -63,7 +62,7 @@ class Designer_Manager
     public function compileDesktopProject($projectFile , $renderTo, $moduleId)
     {
         $replaces = $this->getReplaceConfig();
-        return Designer_Factory::compileDesktopProject($projectFile , $this->_designerConfig , $replaces , $renderTo, $moduleId);
+        return Designer_Factory::compileDesktopProject($projectFile , $this->designerConfig , $replaces , $renderTo, $moduleId);
     }
     /**
      * Get Designer projects tree list
@@ -71,13 +70,13 @@ class Designer_Manager
     public function  getProjectsList($node = '')
     {
         $paths = \Dvelum\Config::storage()->getPaths();
-        $cfgPath = $this->_designerConfig->get('configs');
+        $cfgPath = $this->designerConfig->get('configs');
 
         $list = array();
         $ret = array();
 
         // In accordance with configs merge priority
-        krsort($paths);
+        rsort($paths);
 
         foreach($paths as $path)
         {
@@ -86,7 +85,7 @@ class Designer_Manager
             if(!file_exists($nodePath))
                 continue;
 
-            $items = \Dvelum\File::scanFiles($nodePath , array('.dat'), false, File::Files_Dirs);
+            $items = \Dvelum\File::scanFiles($nodePath , array('.dat'), false, \Dvelum\File::FILES_DIRS);
 
             if(!empty($items))
             {
@@ -129,10 +128,10 @@ class Designer_Manager
      */
     public function findWorkingCopy($relativeProjectPath)
     {
-        $configPath = $this->_designerConfig->get('configs');
+        $configPath = $this->designerConfig->get('configs');
         $paths = Config::storage()->getPaths();
         // In accordance with configs merge priority
-        krsort($paths);
+        rsort($paths);
 
         foreach($paths as $path)
         {
@@ -150,19 +149,19 @@ class Designer_Manager
      */
     public function getReplaceConfig()
     {
-        $templates =  $this->_designerConfig->get('templates');
+        $templates =  $this->designerConfig->get('templates');
         return array(
             array(
                 'tpl' => $templates['wwwroot'],
-                'value' => $this->_appConfig->get('wwwroot')
+                'value' => $this->appConfig->get('wwwroot')
             ),
             array(
                 'tpl' => $templates['adminpath'],
-                'value' => $this->_appConfig->get('adminPath')
+                'value' => $this->appConfig->get('adminPath')
             ),
             array(
                 'tpl' => $templates['urldelimiter'],
-                'value' => $this->_appConfig->get('urlDelimiter')
+                'value' => $this->appConfig->get('urlDelimiter')
             )
         );
     }

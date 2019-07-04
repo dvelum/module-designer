@@ -23,7 +23,6 @@ use Dvelum\App\Backend\Designer\Module;
 use Dvelum\App\Dictionary\Manager;
 use Dvelum\Config;
 use Dvelum\Designer\Factory;
-use Dvelum\Orm\Model;
 use Dvelum\File;
 use Dvelum\App\Session\User;
 
@@ -165,7 +164,7 @@ class Viewframe extends Module
         var canEdit = true;
     
         app.permissions = Ext.create("app.PermissionsStorage");
-        var rights = ' . json_encode(User::getInstance()->getModuleAcl()->getPermissions()) . ';
+        var rights = ' . json_encode(User::factory()->getModuleAcl()->getPermissions()) . ';
         app.permissions.setData(rights);
     
         Ext.onReady(function(){

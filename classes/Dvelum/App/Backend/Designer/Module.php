@@ -4,6 +4,7 @@ use Dvelum\Config;
 use Dvelum\Designer\Project;
 use Dvelum\Designer\Storage;
 use Dvelum\Lang;
+use Dvelum\Page\Page;
 use Dvelum\Request;
 use Dvelum\Response;
 use Dvelum\Store\Factory;
@@ -39,7 +40,7 @@ abstract class Module
 
     protected $project = null;
     /**
-     * @var \Page
+     * @var Page
      */
     protected $page;
     /**
@@ -73,7 +74,7 @@ abstract class Module
         $this->session = Factory::get(Factory::SESSION, 'Designer');
         $this->storage = Storage::factory($this->designerConfig->get('storage'), $this->designerConfig);
 
-        $this->page = \Page::getInstance();
+        $this->page = Page::factory();
         $this->response = \Dvelum\Response::factory();
     }
 

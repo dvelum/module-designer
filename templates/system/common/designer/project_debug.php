@@ -1,22 +1,22 @@
 <?php
-if(!defined('DVELUM'))exit;
 
 function recursiveElement(Designer_Debugger $debugger , $parent = 0)
 {
     $s='';
     $tree = $debugger->getTree();
-    $childs = $tree->getChilds($parent);
+    $childs = $tree->getChildren($parent);
+    $wwwRoot = \Dvelum\Request::factory()->wwwRoot();
 
     foreach ($childs as $k=>$v)
     {
         $item = $v['data'];
         $name = $v['id'];
-        $hasChilds = $tree->hasChilds($name);
+        $hasChilds = $tree->hasChildren($name);
 
         $s.='<div class="objectInfo" id="o_inf_'.$name.'">
                 <div class="objectName">
                     <div class="collapseButton" data-id="'.$name.'" data-prefix="o_item_">
-                       <img id="img_o_item_'.$name.'"  src="'.Request::wwwRoot().'i/system/plus.gif" align="left"><div class="catName">'. $name . '</div>
+                       <img id="img_o_item_'.$name.'"  src="'.$wwwRoot.'i/system/plus.gif" align="left"><div class="catName">'. $name . '</div>
                    </div>
                 </div>
             <div class="sep"></div>
@@ -33,7 +33,7 @@ function recursiveElement(Designer_Debugger $debugger , $parent = 0)
 
 function commentItem(Designer_Debugger $debugger , $name)
 {
-    $wwwRoot = Request::wwwRoot();
+    $wwwRoot = \Dvelum\Request::factory()->wwwRoot();
     $s= '
        <div class="objectBody">
            <span class="title">' . $debugger->getObjectPHPClass($name) . ' <b>' . $name . '</b> [' . $debugger->getObjectExtClass($name) . ']</span>   
@@ -197,7 +197,7 @@ if(!$project)
 
 
 $debugger = new Designer_Debugger($project);
-$wwwRoot = Request::wwwRoot();
+$wwwRoot = \Dvelum\Request::factory()->wwwRoot();
 
 $res = \Dvelum\Resource::factory();
 $res->addCss('/css/system/style.css' , 2);
@@ -216,7 +216,7 @@ $res->addCss('/css/system/gray/style.css' , 3);
 <body>
 <?php 
 
-if($debugger->getTree()->hasChilds(0))
+if($debugger->getTree()->hasChildren(0))
     echo recursiveElement($debugger , 0);
 ?>
 <script type="text/javascript">

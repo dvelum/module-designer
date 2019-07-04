@@ -232,6 +232,12 @@ class Objects extends Module
             $item->expanded = true;
             $item->objClass = $objectClass;
             $item->isInstance = $object->isInstance();
+            if($item->isInstance){
+                /**
+                 * @var \Ext_Object_Instance $object
+                 */
+                $item->instanceOf = $object->getObject()->getName();
+            }
             $item->leaf = true;
             $item->iconCls = $this->getIconClass($objectClass);
             $item->allowDrag = Project::isDraggable($objectClass);

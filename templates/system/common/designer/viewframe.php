@@ -1,5 +1,5 @@
 <?php
-if(!defined('DVELUM'))exit;
+
 $res = \Dvelum\Resource::factory();
 $res->addJs('js/app/system/common.js' , -1);
 $token = '';
@@ -33,7 +33,7 @@ $res->addCss('/css/system/'.$theme.'/style.css' , 3);
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <BASE href="<?php echo Request::baseUrl();?>">
+    <BASE href="<?php echo \Dvelum\Request::factory()->baseUrl();?>">
     <?php
     if($this->useCSRFToken)
         echo '<meta name="csrf-token" content="'.$token.'"/>';

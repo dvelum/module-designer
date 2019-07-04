@@ -21,13 +21,13 @@
 class Designer_Debugger
 {
     /**
-     * @var Designer_Project
+     * @var Designerproject
      */
-    protected $_project;
+    protected $project;
 
-    public function __construct(Designer_Project $project)
+    public function __construct(\Dvelum\Designer\Project $project)
     {
-        $this->_project = $project;
+        $this->project = $project;
     }
 
     /**
@@ -37,17 +37,17 @@ class Designer_Debugger
      */
     protected function _getObject($objectName)
     {
-        if (!$this->_project->objectExists($objectName))
+        if (!$this->project->objectExists($objectName))
             throw new Exception('Designer_Debugger::_getObject nonexistent object ' . $objectName);
-        return $this->_project->getObject($objectName);
+        return $this->project->getObject($objectName);
     }
 
     /**
-     * @return Tree
+     * @return \Dvelum\Tree\Tree
      */
     public function getTree()
     {
-        return $this->_project->getTree();
+        return $this->project->getTree();
     }
 
     /**
@@ -59,9 +59,14 @@ class Designer_Debugger
     {
         $o = $this->_getObject($objectName);
         if ($o instanceof Ext_Object) {
-            return $o->getConfig()->__toArray($exceptEmpty);
+            $config = $o->getConfig();
+            if(is_object($config) && method_exists($config,'__toArray')){
+                return $config->__toArray($exceptEmpty);
+            }else{
+                return [];
+            }
         } else {
-            return array();
+            return [];
         }
     }
 
@@ -72,7 +77,7 @@ class Designer_Debugger
     public function getObjectEvents($objectName)
     {
         $object = $this->_getObject($objectName);
-        $eventManager = $this->_project->getEventManager();
+        $eventManager = $this->project->getEventManager();
         $objectEvents = $eventManager->getObjectEvents($objectName);
         $data = array();
         if (!empty($objectEvents)) {
@@ -218,9 +223,9 @@ class Designer_Debugger
      */
     public function isExtendedObject($objectName)
     {
-        $o = $this->_project->getObject($objectName);
+        $o = $this->project->getObject($objectName);
         if ($o instanceof Ext_Object) {
-            return $this->_project->getObject($objectName)->isExtendedComponent();
+            return $this->project->getObject($objectName)->isExtendedComponent();
         }
         return false;
     }
@@ -232,6 +237,6 @@ class Designer_Debugger
      */
     public function getObjectLocalMethods($objectName)
     {
-        return $this->_project->getMethodManager()->getObjectMethods($objectName);
+        return $this->project->getMethodManager()->getObjectMethods($objectName);
     }
 }
