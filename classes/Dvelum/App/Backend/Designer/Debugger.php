@@ -19,6 +19,7 @@
 
 namespace Dvelum\App\Backend\Designer;
 
+use Dvelum\Page\Page;
 use Dvelum\View;
 use Dvelum\Config;
 
@@ -38,7 +39,7 @@ class Debugger extends Module
         $designerConfig = Config::storage()->get('designer.php');
         // change theme
         $designerTheme = $designerConfig->get('application_theme');
-        $page = \Page::getInstance();
+        $page = Page::factory();
         $page->setTemplatesPath('system/' . $designerTheme. '/');
 
         echo $template->render($page->getTemplatesPath().'designer/project_debug.php');

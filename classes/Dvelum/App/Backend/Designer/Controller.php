@@ -27,6 +27,7 @@ use Dvelum\Filter;
 use Dvelum\Request;
 use Dvelum\Response;
 use Dvelum\Orm\Model;
+use Dvelum\Utils;
 
 /**
  * Class Controller
@@ -263,7 +264,7 @@ class Controller extends Backend\Controller
 
         $s = '';
         $totalSize = 0;
-        foreach (self::$_scripts as $filePath) {
+        foreach (self::$scripts as $filePath) {
             $s .= file_get_contents($this->appConfig->get('wwwPath') . $filePath) . "\n";
             $totalSize += filesize($this->appConfig->get('wwwPath') . $filePath);
         }

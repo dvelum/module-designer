@@ -58,7 +58,7 @@ class Code extends Module
         ];
 
         $code = $project->getObjectCode($object, $replaces);
-        $this->response->success($code);
+        $this->response->success(['code'=>$code]);
     }
 
     /**
@@ -86,6 +86,6 @@ class Code extends Module
         \Ext_Code::setRunNamespace($projectCfg['runnamespace']);
         \Ext_Code::setNamespace($projectCfg['namespace']);
 
-        $this->response->success($project->getCode($replaces));
+        $this->response->success(['code'=>$project->getCode($replaces)]);
     }
 }
