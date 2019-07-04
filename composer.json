@@ -1,6 +1,6 @@
 {
   "name": "dvelum/module-designer",
-  "version": "1.5.0-dev",
+  "version": "1.5.0",
   "type": "dvelum-module",
   "description": "Designer module for DVelum",
   "keywords": ["dvelum","designer"],
@@ -20,7 +20,7 @@
   "require": {
     "php":">=7.2",
     "oomphinc/composer-installers-extender": "^1.1",
-    "dvelum/dvelum": ">=2.1.0"
+    "dvelum/dvelum": ">=3.0.0"
   },
   "scripts": {
     "post-package-install": [
