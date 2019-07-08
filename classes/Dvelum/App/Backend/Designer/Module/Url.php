@@ -121,7 +121,7 @@ class Url extends Module
             return;
         }
 
-        $files = File::scanFiles($dirPath . $path, false, false, File::Dirs_Only);
+        $files = File::scanFiles($dirPath . $path, false, false, File::DIRS_ONLY);
 
         if (empty($files)) {
             $this->response->json([]);
@@ -165,7 +165,7 @@ class Url extends Module
             return;
         }
 
-        $files = File::scanFiles($dirPath . $dir, ['.jpg', '.png', '.gif', '.jpeg'], false, File::Files_Only);
+        $files = File::scanFiles($dirPath . $dir, ['.jpg', '.png', '.gif', '.jpeg'], false, File::FILES_ONLY);
 
         if (empty($files)) {
             $this->response->json([]);

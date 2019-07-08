@@ -149,7 +149,7 @@ class Column extends Module
         foreach ($autoloaderPaths as $path) {
             $scanPath = $path . '/' . $this->designerConfig->get('components') . '/Renderer';
             if (is_dir($scanPath)) {
-                $files = array_merge($files, File::scanFiles($scanPath, ['.php'], true, File::Files_Only));
+                $files = array_merge($files, File::scanFiles($scanPath, ['.php'], true, File::FILES_ONLY));
                 if (!empty($files)) {
                     foreach ($files as $item) {
                         $class = Utils::classFromPath(str_replace($autoloaderPaths, '', $item));
