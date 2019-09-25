@@ -23,6 +23,7 @@ namespace Dvelum\App\Backend\Designer;
 use Dvelum\Orm;
 use Dvelum\Orm\Record\Builder;
 use Dvelum\Db\Adapter;
+use \Ext_Factory;
 
 class Import
 {
