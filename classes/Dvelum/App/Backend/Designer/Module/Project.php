@@ -527,7 +527,7 @@ class Project extends Module
             return;
         }
 
-        $files = File::scanFiles($dirPath . $path, ['.js', '.css'], false, File::Files_Dirs);
+        $files = File::scanFiles($dirPath . $path, ['.js', '.css'], false, File::FILES_DIRS);
 
         if (empty($files)) {
             $this->response->json([]);
@@ -542,7 +542,7 @@ class Project extends Module
                 continue;
             }
 
-            $obj = new stdClass();
+            $obj = new \stdClass();
             $obj->id = str_replace($dirPath, '', $filePath);
             $obj->text = $text;
 
