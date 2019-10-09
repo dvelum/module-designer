@@ -1,7 +1,7 @@
 <?php
 return [
     'id' => 'dvelum-module-designer',
-    'version' => '1.5.0',
+    'version' => '1.5.2',
     'author' => 'Kirill Yegorov',
     'name' => 'DVelum Designer',
     'configs' => './configs',
