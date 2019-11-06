@@ -24,6 +24,7 @@ use Dvelum\App\Backend\Localization\Manager;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Designer;
+use Dvelum\Tree\Item;
 
 /**
  * Project controller
@@ -574,10 +575,13 @@ class Project extends Module
     {
         $list = [];
         $project = $this->getProject();
-        $items = $project->getChilds(Designer\Project::COMPONENT_ROOT);
+        $items = $project->getChildren(Designer\Project::COMPONENT_ROOT);
 
-        foreach ($items as $name => $object) {
-            $list[] = ['name' => $name];
+        foreach ($items as $object) {
+            /**
+             * @var Item $object
+             */
+            $list[] = ['name' => $object->getId()];
         }
         $this->response->success($list);
     }
