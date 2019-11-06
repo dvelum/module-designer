@@ -85,7 +85,7 @@ class Model extends Module
 
         $connectionId = $this->request->post('connectionId', 'string', false);
         $table = $this->request->post('table', 'string', false);
-        $conType = $this->request->post('type', 'integer', false);
+        $conType = $this->request->post('type', 'string', false);
         $fields = $this->request->post('fields', 'array', false);
 
         if ($connectionId === false || !$table || empty($fields) || $conType === false) {
@@ -93,15 +93,10 @@ class Model extends Module
             return;
         }
 
-        $conManager = new \Dvelum\App\Backend\Orm\Connections($this->appConfig->get('db_configs'));
-        $cfg = $conManager->getConnection($conType, $connectionId);
-        if (!$cfg) {
-            $this->response->error($this->lang->get('WRONG_REQUEST'));
-            return;
-        }
-        $cfg = $cfg->__toArray();
+        $dbManager = \Dvelum\Orm\Model::factory('user')->getDbManager();
+        $db = $dbManager->getDbConnection($connectionId, $conType);
 
-        $data = \Backend_Designer_Import::checkImportDBFields($cfg, $fields, $table);
+        $data = Import::checkImportDBFields($db, $fields, $table);
 
         if (!$data) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
