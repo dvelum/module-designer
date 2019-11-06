@@ -7,5 +7,6 @@ return[
     'GridFilterEvents' => '\\Dvelum\\App\\Backend\\Designer\\Module\\Grid\\Filter\\Events',
     'GridFilter' => '\\Dvelum\\App\\Backend\\Designer\\Module\\Grid\\Filter',
     'GridColumn' => '\\Dvelum\\App\\Backend\\Designer\\Module\\Grid\\Column',
-    'GridColumnEvents' => '\\Dvelum\\App\\Backend\\Designer\\Module\\Grid\\Column\\Events'
+    'GridColumnEvents' => '\\Dvelum\\App\\Backend\\Designer\\Module\\Grid\\Column\\Events',
+    'FilterEvents' => '\\Dvelum\\App\\Backend\\Designer\\Module\\FilterEvents'
 ];

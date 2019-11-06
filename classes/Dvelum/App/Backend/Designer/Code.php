@@ -20,6 +20,9 @@ declare(strict_types=1);
 
 namespace Dvelum\App\Backend\Designer;
 use Dvelum\Config;
+use \ReflectionClass;
+use \ReflectionMethod;
+use Dvelum\Request;
 
 class Code
 {
@@ -62,7 +65,7 @@ class Code
         } elseif ($reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
             $routerType = $frontConfig->get('router');
             if (strtolower($routerType) == 'cms') {
-                $module = self::_moduleByClass($controllerName);
+                $module = self::moduleByClass($controllerName);
                 if ($module !== false) {
                     $urlcode = \Dvelum\Orm\Model::factory('Page')->getCodeByModule($module);
                     if ($urlcode !== false) {
@@ -79,19 +82,20 @@ class Code
 
                 $url = array_merge($url, $paths);
             } elseif ($routerType == 'Config') {
-                $urlCode = self::_moduleByClass($controllerName);
+                $urlCode = self::moduleByClass($controllerName);
                 if ($urlCode !== false) {
                     $url[] = $urlCode;
                 }
             }
         }
         $url[] = '';
-        Request::setConfigOption('urldelimiter', $templates['urldelimiter']);
-        Request::setConfigOption('wwwroot', $templates['wwwroot']);
+        $request = Request::factory();
+        $request->setConfigOption('urldelimiter', $templates['urldelimiter']);
+        $request->setConfigOption('wwwroot', $templates['wwwroot']);
 
-        $url = Request::url($url, false);
-        Request::setConfigOption('urldelimiter', $appCfg['urlDelimiter']);
-        Request::setConfigOption('wwwroot', $appCfg['wwwroot']);
+        $url = $request->url($url, false);
+        $request->setConfigOption('urldelimiter', $appCfg['urlDelimiter']);
+        $request->setConfigOption('wwwroot', $appCfg['wwwroot']);
 
         return $url;
     }
@@ -119,13 +123,13 @@ class Code
         $reflector = new ReflectionClass($controllerName);
 
         if (!$reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')  && !$reflector->isSubclassOf('\\Dvelum\\App\\Frontend\\Controller')) {
-            return array();
+            return [];
         }
 
-        $actions = array();
+        $actions = [];
         $methods = $reflector->getMethods(ReflectionMethod::IS_PUBLIC);
 
-        $url = array();
+        $url = [];
 
         if ($reflector->isSubclassOf('\\Dvelum\\App\\Backend\\Controller')) {
             $url[] = $templates['adminpath'];
@@ -136,7 +140,7 @@ class Code
 
             if (strtolower($frontConfig->get('router')) == 'cms') {
 
-                $module = self::_moduleByClass($controllerName);
+                $module = self::moduleByClass($controllerName);
                 if ($module !== false) {
                     $urlcode = \Dvelum\Orm\Model::factory('Page')->getCodeByModule($module);
                     if ($urlcode !== false) {
@@ -153,7 +157,7 @@ class Code
 
                 $url = array_merge($url, $paths);
             } elseif ($appCfg['frontend_router_type'] == 'config') {
-                $urlCode = self::_moduleByClass($controllerName);
+                $urlCode = self::moduleByClass($controllerName);
                 if ($urlCode !== false) {
                     $url[] = $urlCode;
                 }
@@ -161,8 +165,8 @@ class Code
         }
 
         if (!empty($methods)) {
-            Request::setDelimiter($templates['urldelimiter']);
-            Request::setConfigOption('wwwRoot', $templates['wwwroot']);
+            $request = Request::factory();
+            $request->setConfigOption('wwwRoot', $templates['wwwroot']);
 
             foreach ($methods as $method) {
                 if (substr($method->name, -6) !== 'Action') {
@@ -176,18 +180,17 @@ class Code
                 $actions[] = array(
                     'name' => $actionName,
                     'code' => $method->name,
-                    'url' => Request::url($paths, false),
-                    'comment' => self::_clearDocSymbols($method->getDocComment())
+                    'url' => $request->url($paths, false),
+                    'comment' => self::clearDocSymbols($method->getDocComment())
                 );
             }
 
-            Request::setDelimiter($appCfg['urlDelimiter']);
-            Request::setConfigOption('wwwRoot', $appCfg['wwwroot']);
+            $request->setConfigOption('wwwRoot', $appCfg['wwwroot']);
         }
         return $actions;
     }
 
-    static protected function _moduleByClass($class)
+    static protected function moduleByClass($class)
     {
         $modules = Config::storage()->get('main.php')->get('frontend_modules');
         if (!empty($modules)) {
@@ -204,8 +207,8 @@ class Code
      * Clear string from comment symbols
      * @param string $string
      */
-    static protected function _clearDocSymbols($string)
+    static protected function clearDocSymbols($string)
     {
-        return str_replace(array('/*', '*/', '*'), '', $string);
+        return str_replace(['/*', '*/', '*'], '', $string);
     }
 }

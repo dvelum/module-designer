@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\App\Backend\Designer\Import;
 
 /**
  * Class Model
@@ -58,7 +59,7 @@ class Model extends Module
         $objectName = $this->request->post('objectName', 'string', false);
         $fields = $this->request->post('fields', 'array', false);
 
-        $data = \Backend_Designer_Import::checkImportORMFields($objectName, $fields);
+        $data = Import::checkImportORMFields($objectName, $fields);
 
         if (!$data) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
