@@ -271,6 +271,7 @@ class Grid extends Module
         }
 
         $col = \Ext_Factory::object($name);
+        $col->setName($this->object->getColumn($columnId)->getName());
 
         \Ext_Factory::copyProperties($this->object->getColumn($columnId), $col);
 
