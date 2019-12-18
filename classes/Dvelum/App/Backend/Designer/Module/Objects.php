@@ -85,12 +85,16 @@ class Objects extends Module
                         }
 
                         // append instance token
-                        if ($addInstances && $object->isExtendedComponent()) {
-                            $list[] = [
-                                'id' => $name,
-                                'title' => $name,
-                                'objClass' => $cfg['namespace'] . '.' . $name
-                            ];
+                        if($object->isExtendedComponent()){
+                            if($addInstances){
+                                $list[] = [
+                                    'id' => $name,
+                                    'title' => $name,
+                                    'objClass' => $cfg['namespace'].'.'.$name
+                                ];
+                            }else{
+                                continue;
+                            }
                         }
 
                         if ($addStores) {
