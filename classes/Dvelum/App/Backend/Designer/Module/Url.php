@@ -24,6 +24,8 @@ use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Utils;
+use \stdClass;
+use Dvelum\App\Backend\Designer\Code;
 
 class Url extends Module
 {
@@ -42,7 +44,7 @@ class Url extends Module
 
         foreach ($classPaths as $item) {
             if (is_dir($item . $path)) {
-                $list = File::scanFiles($item . $path, ['.php'], false, File::Files_Dirs);
+                $list = File::scanFiles($item . $path, ['.php'], false, File::FILES_DIRS);
                 if (!empty($list)) {
                     $pathLen = strlen($item);
                     foreach ($list as &$v) {
@@ -71,7 +73,7 @@ class Url extends Module
 
             if ($obj->text === 'Controller.php') {
                 $controllerName = str_replace('/', '_', substr($filePath, 1, -4));
-                $obj->url = Backend_Designer_Code::getControllerUrl($controllerName);
+                $obj->url = Code::getControllerUrl($controllerName);
             } else {
                 $obj->url = '';
             }
@@ -104,7 +106,7 @@ class Url extends Module
             $controller = Utils::classFromPath($controller, true);
         }
 
-        $actions = \Backend_Designer_Code::getPossibleActions($controller);
+        $actions = Code::getPossibleActions($controller);
         $this->response->success($actions);
     }
 

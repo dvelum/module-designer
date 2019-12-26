@@ -21,7 +21,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
 
-class Filterevents extends Module
+class FilterEvents extends Events
 {
     protected function getObject()
     {

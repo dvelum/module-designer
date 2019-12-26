@@ -131,7 +131,7 @@ class Project
      * JS Action Code
      * @var string
      */
-    protected $_actionJs = '';
+    protected $actionJs = '';
 
     public function __construct()
     {
@@ -311,8 +311,9 @@ class Project
 
     public function __get($name)
     {
-        if (!isset($this->config[$name]))
-            trigger_error('Invalid config property requested');
+        if (!isset($this->config[$name])){
+            trigger_error('Invalid config property requested. ['.$name.']');
+        }
         return $this->config[$name];
     }
 
@@ -322,6 +323,16 @@ class Project
     }
 
     public function __set($name, $value)
+    {
+        $this->config[$name] = $value;
+    }
+
+    /**
+     * Set project property
+     * @param string $name
+     * @param $value
+     */
+    public function set(string $name, $value)
     {
         $this->config[$name] = $value;
     }

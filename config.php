@@ -1,7 +1,7 @@
 <?php
 return [
     'id' => 'dvelum-module-designer',
-    'version' => '1.5.1',
+    'version' => '1.5.3',
     'author' => 'Kirill Yegorov',
     'name' => 'DVelum Designer',
     'configs' => './configs',
@@ -14,5 +14,5 @@ return [
     ],
     'objects' =>[
     ],
-    'post-install'=>''
+    'post-install'=>'\\Dvelum\\Designer\\Installer'
 ];

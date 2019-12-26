@@ -65,17 +65,17 @@ class Orm extends Module
         $fields = $config->getFieldsConfig();
         if (empty($fields)) {
             $this->response->success([]);
+            return;
         }
 
         $data = [];
 
-        foreach ($fields as $name => $cfg)
-        {
+        foreach ($fields as $name => $cfg) {
             $type = $cfg['db_type'];
             $field = $config->getField($name);
 
-            if ($field->isLink()){
-                if ($field->isDictionaryLink()){
+            if ($field->isLink()) {
+                if ($field->isDictionaryLink()) {
                     $type = $this->lang->get('DICTIONARY_LINK') . '"' . $config->getField($name)->getLinkedDictionary() . '"';
                 } else {
                     $obj = $field->getLinkedObject();

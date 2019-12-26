@@ -198,8 +198,11 @@ class Properties extends Module
      */
     public function listAdaptersAction()
     {
+        $autoloader = \Dvelum\Externals\Manager::factory()->getAutoloader();
+        $autoloaderPaths = $autoloader->getRegisteredPaths();
+        //$autoloaderPaths = Config::storage()->get('autoloader.php')->get('paths');
         $data = [];
-        $autoloaderPaths = Config::storage()->get('autoloader.php')->get('paths');
+
         $files = [];
         $classes = [];
 

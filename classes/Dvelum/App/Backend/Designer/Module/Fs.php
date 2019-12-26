@@ -17,9 +17,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 namespace Dvelum\App\Backend\Designer\Module;
+
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config;
 use Dvelum\Designer\Manager;
+use Dvelum\Designer\Project;
 
 class Fs extends Module
 {
@@ -103,9 +105,7 @@ class Fs extends Module
             return;
         }
 
-        $obj = new \Designer_Project();
-        $obj->actionjs = $actionFilePath;
-
+        $obj = new Project();
         $dir = dirname($savePath);
 
         if (!file_exists($dir)) {

@@ -24,6 +24,7 @@ use Dvelum\App\Backend\Localization\Manager;
 use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Designer;
+use Dvelum\Tree\Item;
 
 /**
  * Project controller
@@ -228,18 +229,18 @@ class Project extends Module
      */
     public function addobjectAction()
     {
-        if (!$this->_checkLoaded()) {
+        if (!$this->checkLoaded()) {
             return;
         }
 
         $name = $this->request->post('name', 'alphanum', false);
         $class = $this->request->post('class', 'alphanum', false);
-        $parent = $this->request->post('parent', 'alphanum', \Designer_Project::LAYOUT_ROOT);
+        $parent = $this->request->post('parent', 'alphanum', Designer\Project::LAYOUT_ROOT);
         $class = ucfirst($class);
         $project = $this->getProject();
 
         if (!strlen($parent)) {
-            $parent = \Designer_Project::LAYOUT_ROOT;
+            $parent = Designer\Project::LAYOUT_ROOT;
         }
 
         if ($name == false) {
@@ -261,10 +262,10 @@ class Project extends Module
         $isWindowComponent = strpos($class, 'Component_Window_') !== false;
 
         /*
-         * Check if parent object exists and can has childs
+         * Check if parent object exists and can has children
          */
-        if (!$project->objectExists($parent) || !Designer_Project::isContainer($project->getObject($parent)->getClass())) {
-            $parent = \Designer_Project::LAYOUT_ROOT;
+        if (!$project->objectExists($parent) || !Designer\Project::isContainer($project->getObject($parent)->getClass())) {
+            $parent = Designer\Project::LAYOUT_ROOT;
         }
 
         if (!$name || !$class) {
@@ -278,13 +279,13 @@ class Project extends Module
         }
 
         if (in_array($class, $rootClasses, true) || $isWindowComponent) {
-            $parent = \Designer_Project::COMPONENT_ROOT;
+            $parent = Designer\Project::COMPONENT_ROOT;
         }
 
         $object = \Ext_Factory::object($class);
         $object->setName($name);
 
-        if ($parent === \Designer_Project::COMPONENT_ROOT) {
+        if ($parent === Designer\Project::COMPONENT_ROOT) {
             $object->extendedComponent(true);
         } else {
             $object->extendedComponent(false);
@@ -317,13 +318,13 @@ class Project extends Module
             }
         }
 
-        if (in_array($class, \Designer_Project::$hasDocked, true)) {
+        if (in_array($class, Designer\Project::$hasDocked, true)) {
             $dockObject = \Ext_Factory::object('Docked');
             $dockObject->setName($name . '__docked');
             $project->addObject($name, $dockObject);
         }
 
-        if (in_array($class, \Designer_Project::$hasMenu, true)) {
+        if (in_array($class, Designer\Project::$hasMenu, true)) {
             $menuObject = \Ext_Factory::object('Menu');
             $menuObject->setName($name . '__menu');
             $project->addObject($name, $menuObject);
@@ -393,18 +394,18 @@ class Project extends Module
         $rootClasses = ['Window', 'Store', 'Data_Store', 'Data_Store_Tree', 'Model'];
         $isWindowComponent = (strpos($instanceObject->getClass(), 'Component_Window_') !== false);
 
-        if ($parent === \Designer_Project::COMPONENT_ROOT) {
-            $parent = \Designer_Project::LAYOUT_ROOT;
+        if ($parent === Designer\Project::COMPONENT_ROOT) {
+            $parent = Designer\Project::LAYOUT_ROOT;
         }
 
         if (in_array($instanceObject->getClass(), $rootClasses, true) || $isWindowComponent) {
-            $parent = \Designer_Project::LAYOUT_ROOT;
+            $parent = Designer\Project::LAYOUT_ROOT;
         }
         /*
          * Check if parent object exists and can has childs
         */
-        if (!$project->objectExists($parent) || !\Designer_Project::isContainer($project->getObject($parent)->getClass())) {
-            $parent = \Designer_Project::LAYOUT_ROOT;
+        if (!$project->objectExists($parent) || !Designer\Project::isContainer($project->getObject($parent)->getClass())) {
+            $parent = Designer\Project::LAYOUT_ROOT;
         }
 
         if ($project->objectExists($name)) {
@@ -470,7 +471,7 @@ class Project extends Module
         /*
          * Check if parent object exists and can has childs
          */
-        if (!$project->objectExists($parent) || !\Designer_Project::isContainer($project->getObject($parent)->getClass())) {
+        if (!$project->objectExists($parent) || !Designer\Project::isContainer($project->getObject($parent)->getClass())) {
             $parent = 0;
         }
 
@@ -527,7 +528,7 @@ class Project extends Module
             return;
         }
 
-        $files = File::scanFiles($dirPath . $path, ['.js', '.css'], false, File::Files_Dirs);
+        $files = File::scanFiles($dirPath . $path, ['.js', '.css'], false, File::FILES_DIRS);
 
         if (empty($files)) {
             $this->response->json([]);
@@ -542,7 +543,7 @@ class Project extends Module
                 continue;
             }
 
-            $obj = new stdClass();
+            $obj = new \stdClass();
             $obj->id = str_replace($dirPath, '', $filePath);
             $obj->text = $text;
 
@@ -574,10 +575,13 @@ class Project extends Module
     {
         $list = [];
         $project = $this->getProject();
-        $items = $project->getChilds(\Designer_Project::COMPONENT_ROOT);
+        $items = $project->getChildren(Designer\Project::COMPONENT_ROOT);
 
-        foreach ($items as $name => $object) {
-            $list[] = ['name' => $name];
+        foreach ($items as $object) {
+            /**
+             * @var Item $object
+             */
+            $list[] = ['name' => $object->getId()];
         }
         $this->response->success($list);
     }
