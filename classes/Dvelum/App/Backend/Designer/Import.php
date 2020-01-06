@@ -251,7 +251,7 @@ class Import
      * @param string $name            
      * @param array $fieldConfig
      *            - field info from Db_Object_Config
-     * @return Ext_Object or false
+     * @return \Ext_Object or false
      */
     static public function convertOrmFieldToExtField($name , $fieldConfig , $controllerUrl = '')
     {
