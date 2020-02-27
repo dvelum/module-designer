@@ -1,6 +1,6 @@
 {
   "name": "dvelum/module-designer",
-  "version": "1.5.5",
+  "version": "1.5.4",
   "type": "dvelum3-module",
   "description": "Designer module for DVelum",
   "keywords": ["dvelum","designer"],
