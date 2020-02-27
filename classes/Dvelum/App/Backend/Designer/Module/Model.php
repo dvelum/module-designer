@@ -122,7 +122,6 @@ class Model extends Module
             return;
         }
 
-        $this->checkLoaded();
         $name = $this->request->post('object', 'string', '');
 
         $project = $this->getProject();

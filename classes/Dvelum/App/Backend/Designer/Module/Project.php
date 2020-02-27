@@ -40,11 +40,10 @@ class Project extends Module
     public function checkLoadedAction()
     {
         $isLoaded = $this->checkLoaded();
-        if ($isLoaded) {
-            $this->response->success(['file' => $this->session->get('file')]);
-        } else {
-            $this->response->error('not loaded');
+        if (!$isLoaded) {
+            return;
         }
+        $this->response->success(['file' => $this->session->get('file')]);
     }
 
     /**
