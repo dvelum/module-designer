@@ -810,6 +810,14 @@ Ext.define('designer.properties.Panel', {
         var listStore = app.designer.createStoresList(false);
         var instanceStore = app.designer.createStoresList(true);
 
+        var column = false;
+        // fix for grid editor combobox store
+        if(!Ext.isEmpty(this.extraParams.column)){
+            listStore.proxy.setExtraParam('column', this.extraParams.column);
+            instanceStore.proxy.setExtraParam('column', this.extraParams.column);
+            column = this.extraParams.column;
+        }
+
         var win = Ext.create('designer.store.PropertyWindow',{
             title:desLang.store,
             modal:true,
@@ -817,7 +825,8 @@ Ext.define('designer.properties.Panel', {
             columnId: this.extraParams.id,
             controllerUrl:this.controllerUrl,
             storesStore:listStore,
-            instancesStore:instanceStore
+            instancesStore:instanceStore,
+            column: column
         });
         Ext.defer(function () {
             win.show().toFront();
