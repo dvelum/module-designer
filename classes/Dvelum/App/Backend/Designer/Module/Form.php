@@ -25,6 +25,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Config\ConfigInterface;
 use Dvelum\Orm;
+use Dvelum\App\Backend\Designer\Import;
 
 class Form extends Module
 {
@@ -129,7 +130,7 @@ class Form extends Module
      */
     protected function importOrmField($name, ConfigInterface $importObjectConfig)
     {
-        $newField = \Backend_Designer_Import::convertOrmFieldToExtField($name, $importObjectConfig->getFieldConfig($name));
+        $newField = Import::convertOrmFieldToExtField($name, $importObjectConfig->getFieldConfig($name));
         if ($newField !== false) {
             $newField->setName($this->object->getName() . '_' . $name);
             $this->project->addObject($this->object->getName(), $newField);
@@ -144,7 +145,7 @@ class Form extends Module
      */
     protected function importDbField($name, $config)
     {
-        $newField = \Backend_Designer_Import::convertDbFieldToExtField($config);
+        $newField = Import::convertDbFieldToExtField($config);
         if ($newField !== false) {
             $newField->setName($this->object->getName() . '_' . $name);
             $this->project->addObject($this->object->getName(), $newField);
