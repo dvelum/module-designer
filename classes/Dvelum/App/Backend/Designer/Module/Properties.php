@@ -25,6 +25,7 @@ use Dvelum\Config;
 use Dvelum\File;
 use Dvelum\Filter;
 use Dvelum\Utils;
+use \Designer\Project\Code;
 
 class Properties extends Module
 {
@@ -140,7 +141,7 @@ class Properties extends Module
             return;
         }
 
-        $storeName = str_replace([\Designer_Project_Code::$NEW_INSTANCE_TOKEN, ' '], '', $object->store);
+        $storeName = str_replace([\Designer\Project\Code::$NEW_INSTANCE_TOKEN, ' '], '', $object->store);
 
         if (!$project->objectExists($storeName)) {
             $this->response->json([]);
@@ -295,13 +296,16 @@ class Properties extends Module
         $object = $this->getObject();
         $data = [];
 
-        $store = $object->store;
+        $store = null;
+        if(isset($object->store)){
+            $store = $object->store;
+        }
 
         if (empty($store) || is_string($store)) {
-            if (strpos($store, \Designer_Project_Code::$NEW_INSTANCE_TOKEN) !== false) {
+            if (strpos($store, Code::$NEW_INSTANCE_TOKEN) !== false) {
                 $data = [
                     'type' => 'instance',
-                    'store' => trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store))
+                    'store' => trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $store))
                 ];
             } else {
                 $data = [

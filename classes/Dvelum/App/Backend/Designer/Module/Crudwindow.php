@@ -21,6 +21,7 @@ namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Orm;
+use Dvelum\App\Backend\Designer\Import;
 
 class Crudwindow extends Module
 {
@@ -116,7 +117,7 @@ class Crudwindow extends Module
             'Component_Field_System_Objectslist'
         ];
 
-        $newField = \Backend_Designer_Import::convertOrmFieldToExtField($name,
+        $newField = Import::convertOrmFieldToExtField($name,
             $importObjectConfig->getFieldConfig($name));
 
         if ($newField !== false) {

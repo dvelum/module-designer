@@ -817,6 +817,7 @@ Ext.define('designer.properties.Panel', {
             instanceStore.proxy.setExtraParam('column', this.extraParams.column);
             column = this.extraParams.column;
         }
+        console.log(this.extraParams);
 
         var win = Ext.create('designer.store.PropertyWindow',{
             title:desLang.store,
@@ -824,9 +825,9 @@ Ext.define('designer.properties.Panel', {
             objectName : this.objectName,
             columnId: this.extraParams.id,
             controllerUrl:this.controllerUrl,
+            column: column,
             storesStore:listStore,
-            instancesStore:instanceStore,
-            column: column
+            instancesStore:instanceStore
         });
         Ext.defer(function () {
             win.show().toFront();

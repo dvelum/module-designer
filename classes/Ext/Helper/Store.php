@@ -90,7 +90,7 @@ class Ext_Helper_Store implements Ext_Exportable
                 $string = $this->value;
                 break;
             case self::TYPE_INSTANCE:
-                $string = Designer_Project_Code::$NEW_INSTANCE_TOKEN . $this->value;
+                $string = \Designer\Project\Code::$NEW_INSTANCE_TOKEN . $this->value;
                 break;
 
         }

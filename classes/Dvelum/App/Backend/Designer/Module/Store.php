@@ -21,6 +21,9 @@ namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\Designer\Project;
+use Dvelum\App\Backend\Designer\Import;
+use Designer;
+use Designer\Project\Code;
 
 class Store extends Module
 {
@@ -60,7 +63,7 @@ class Store extends Module
         $objectName = $this->request->post('objectName', 'string', false);
         $fields = $this->request->post('fields', 'array', false);
 
-        $data = \Backend_Designer_Import::checkImportORMFields($objectName, $fields);
+        $data = Import::checkImportORMFields($objectName, $fields);
 
         if (!$data) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));
@@ -88,7 +91,7 @@ class Store extends Module
         }
 
         $name = $this->request->post('object', 'string', '');
-        $name = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
+        $name = trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $name));
 
         $project = $this->getProject();
 
@@ -141,7 +144,7 @@ class Store extends Module
                 $store = $store->getValue();
             }
         }
-        $store = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
+        $store = trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $store));
 
         if (!strlen($store) || !$project->objectExists($store)) {
             $this->response->error('Undefined Store object');
@@ -193,7 +196,7 @@ class Store extends Module
         }
 
         $name = $this->request->post('object', 'string', '');
-        $name = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $name));
+        $name = trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $name));
 
         $project = $this->getProject();
         if (!strlen($name) || !$project->objectExists($name)) {
@@ -290,7 +293,7 @@ class Store extends Module
                 $store = $store->getValue();
             }
         }
-        $store = trim(str_replace(\Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store));
+        $store = trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $store));
 
         if (!strlen($store) || !$project->objectExists($store)) {
             $this->response->error('Undefined object');
@@ -346,7 +349,7 @@ class Store extends Module
             return;
         }
 
-        $data = \Backend_Designer_Import::checkImportDBFields($db, $fields, $table);
+        $data = Import::checkImportDBFields($db, $fields, $table);
 
         if (!$data) {
             $this->response->error($this->lang->get('WRONG_REQUEST'));

@@ -1,7 +1,7 @@
 <?php
 /*
  * DVelum project https://github.com/dvelum/dvelum , http://dvelum.net
- * Copyright (C) 2011-2013  Kirill A Egorov
+ * Copyright (C) 2011-2021  Kirill A Egorov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+namespace Designer\Project;
+
 use \Dvelum\Utils\Strings;
 
-class Designer_Project_Code
+class Code
 {
     static public $NEW_INSTANCE_TOKEN = '[new:]';
 
@@ -114,7 +116,7 @@ class Designer_Project_Code
 
             switch ($store->getType()){
                 case Ext_Helper_Store::TYPE_INSTANCE :
-                    $object->store = 'Ext.create("'.Ext_Code::appendNamespace(trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store->getValue()))).'",{})';
+                    $object->store = 'Ext.create("'.Ext_Code::appendNamespace(trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $store->getValue()))).'",{})';
                     break;
                 case Ext_Helper_Store::TYPE_STORE :
                     $object->store = Ext_Code::appendRunNamespace($store->getValue());
@@ -127,8 +129,8 @@ class Designer_Project_Code
         }else{
             //backward compatibility
             $store = trim($store);
-            if(strpos($store , Designer_Project_Code::$NEW_INSTANCE_TOKEN) !==false){
-                $object->store = 'Ext.create("'.Ext_Code::appendNamespace(trim(str_replace(Designer_Project_Code::$NEW_INSTANCE_TOKEN, '', $store))).'",{})';
+            if(strpos($store , Code::$NEW_INSTANCE_TOKEN) !==false){
+                $object->store = 'Ext.create("'.Ext_Code::appendNamespace(trim(str_replace(Code::$NEW_INSTANCE_TOKEN, '', $store))).'",{})';
             }elseif (strlen($store)){
                 $object->store = Ext_Code::appendRunNamespace($store);
             }

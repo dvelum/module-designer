@@ -1,7 +1,7 @@
 <?php
 /*
  * DVelum project https://github.com/dvelum/dvelum , http://dvelum.net
- * Copyright (C) 2011-2013  Kirill A Egorov
+ * Copyright (C) 2011-2021  Kirill A Egorov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+use Designer\Project\Code;
 /**
  * Designer project class.
  * @author Kirill Egorov 2011
@@ -536,7 +536,7 @@ class Designer_Project
      */
     public function getCode($replace = array())
     {
-        $codeGen = new Designer_Project_Code($this);
+        $codeGen = new Code($this);
         if (!empty($replace))
             return Designer_Factory::replaceCodeTemplates($replace, $codeGen->getCode());
         else
@@ -551,7 +551,7 @@ class Designer_Project
      */
     public function getObjectCode($name, $replace = array())
     {
-        $codeGen = new Designer_Project_Code($this);
+        $codeGen = new Code($this);
 
         if (!empty($replace)) {
             $k = array();
