@@ -3,7 +3,7 @@ return [
 	'storage'=>'file',
 	'configs'=> 'layouts/',
 	'lang'=>'eng',
-	'development'=>1,
+	'development'=> false,
 	'components'=>'Ext/Component',
 	'field_components'=>'Ext/Component/Field',
 	'filter_conponents'=>'Ext/Component/Filter',
