@@ -170,14 +170,19 @@ class Controller extends Backend\Controller
         $page = \Dvelum\Page\Page::factory();
         $page->setTemplatesPath('system/' . $designerTheme . '/');
 
+        if($this->designerConfig->get('html_editor')){
+            Model::factory('Medialib')->includeScripts();
+        }
 
-       // Model::factory('Medialib')->includeScripts();
         $this->resource->addJs('/resources/dvelum-module-designer/js/designer/lang/' . $this->designerConfig->get('lang') . '.js',1);
         $this->resource->addCss('/resources/dvelum-module-designer/css/style.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/lib/codemirror.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/dialog/dialog.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/addon/hint/show-hint.css');
         $this->resource->addCss('/resources/dvelum-module-designer/js/lib/CodeMirror/theme/eclipse.css');
+
+
+
 
         $dbConfigs = [];
         foreach ($this->appConfig->get('db_configs') as $k => $v) {
@@ -192,6 +197,7 @@ class Controller extends Backend\Controller
               var dbConfigsList = ' . json_encode($dbConfigs) . ';    
               var componentTemplates = ' . json_encode(array_values($componentTemplates)) . ';  
               var designerVersion = "' . $this->version . '";
+               app.htmlEditorEnabled = '.((int) $this->designerConfig->get('html_editor')).';
         ');
 
         $count = 4;

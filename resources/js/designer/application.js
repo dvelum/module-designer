@@ -684,12 +684,14 @@ Ext.define('designer.application', {
                                             text: desLang.mediaHtmlField,
                                             iconCls: 'textMediaFieldIcon',
                                             oClass: 'Component_Field_System_Medialibhtml',
-                                            showType: 'loaded'
+                                            showType: 'loaded',
+                                            hidden: !app.htmlEditorEnabled
                                         }, {
                                             text: desLang.mediaItemField,
                                             iconCls: 'resourceFieldIcon',
                                             oClass: 'Component_Field_System_Medialibitem',
-                                            showType: 'loaded'
+                                            showType: 'loaded',
+                                            hidden: !app.htmlEditorEnabled
                                         }, {
                                             text: desLang.relatedItemsGrid,
                                             iconCls: 'gridIcon',
