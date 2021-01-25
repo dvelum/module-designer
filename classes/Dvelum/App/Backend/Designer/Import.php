@@ -255,6 +255,7 @@ class Import
      */
     static public function convertOrmFieldToExtField($name , $fieldConfig , $controllerUrl = '')
     {
+        $designerConfig  = \Dvelum\Config::storage()->get('designer.php');
         $type = $fieldConfig['db_type'];
         $newField = false;
         
@@ -326,7 +327,7 @@ class Import
          */
         elseif(in_array($type , Builder::$textTypes , true))
         {
-            if(isset($fieldConfig['allow_html']) && $fieldConfig['allow_html']){
+            if($designerConfig->get('html_editor') && isset($fieldConfig['allow_html']) && $fieldConfig['allow_html']){
                 $newField = Ext_Factory::object('Component_Field_System_Medialibhtml');
                 $newField->editorName = $name;
                 $newField->title = $fieldConfig['title'];
