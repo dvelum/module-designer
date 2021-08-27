@@ -1,10 +1,11 @@
 <?php
-return array(
-	array(
-	   'icon'=>'',
-	   'text' => 'Window Form',
-	   'iconCls'=>'objectWindowIcon',
-	   'adapter'=>'Backend_Designer_Generator_Component_Window',
-	   'showType'=>'loaded'
-    )
-);
+
+return [
+    [
+        'icon' => '',
+        'text' => 'Window Form',
+        'iconCls' => 'objectWindowIcon',
+        'adapter' => \Dvelum\App\Backend\Designer\Generator\Component\Window::class,
+        'showType' => 'loaded'
+    ]
+];

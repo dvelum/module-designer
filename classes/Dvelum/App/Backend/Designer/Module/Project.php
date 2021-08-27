@@ -19,6 +19,7 @@
 
 namespace Dvelum\App\Backend\Designer\Module;
 
+use Dvelum\App\Backend\Designer\Generator\Component;
 use Dvelum\App\Backend\Designer\Module;
 use Dvelum\App\Backend\Localization\Manager;
 use Dvelum\Config;
@@ -448,7 +449,7 @@ class Project extends Module
 
         $adapterObject = new $adapter();
 
-        if (!$adapterObject instanceof \Backend_Designer_Generator_Component) {
+        if (!$adapterObject instanceof Component) {
             $this->response->error($this->lang->get('WRONG_REQUEST') . ' invalid adapter interface');
             return;
         }
