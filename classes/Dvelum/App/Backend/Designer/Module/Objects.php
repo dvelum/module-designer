@@ -20,6 +20,7 @@
 namespace Dvelum\App\Backend\Designer\Module;
 
 use Dvelum\App\Backend\Designer\Module;
+use Dvelum\Designer\Factory;
 use Dvelum\Designer\Manager;
 use Dvelum\Designer\Project;
 use Dvelum\Designer\Project\Container;
@@ -526,7 +527,7 @@ class Objects extends Module
                 }
 
                 $projectFile = $manager->findWorkingCopy($file);
-                $subProject = \Designer_Factory::loadProject($this->designerConfig, $projectFile);
+                $subProject = Factory::loadProject($this->designerConfig, $projectFile);
                 $list[] = [
                     'project' => $subProject,
                     'file' => $file
@@ -551,6 +552,7 @@ class Objects extends Module
 
         if (empty($relatedProjects)) {
             $this->response->success([]);
+            return;
         }
 
         $result = [];
