@@ -1,4 +1,4 @@
 <?php
 return [
-    'designer' => '1.6.1'
+    'designer' => '1.6.2'
 ];
